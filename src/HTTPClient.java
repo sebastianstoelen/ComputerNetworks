@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+
 import org.jsoup.Jsoup;
 import org.jsoup.parser.Parser;
 import org.jsoup.nodes.Element;
@@ -7,7 +8,9 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -58,6 +61,7 @@ public class HTTPClient {
         String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
         System.out.println(message);
         s_out.println(message);
+		
         
         String filename = command + "-" + URI.substring(1);
         filename = filename.replace("/","-");
