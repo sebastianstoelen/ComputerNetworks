@@ -7,7 +7,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
-
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 /**
  * Created by Sebastian Stoelen on 04/03/15.
@@ -22,7 +23,7 @@ public class HTTPClient {
         //String command = args[0];
         String command = "GET";
         //String URI = args[1];
-        String URI = "/";
+        String URI = "/images/webs.jpg";
         //int port = Integer.parseInt(args[2]);
         int port = 80;
         //String version = args[3];
@@ -57,8 +58,9 @@ public class HTTPClient {
         String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
         System.out.println(message);
         s_out.println(message);
-
+        
         String filename = command + "-" + URI.substring(1);
+        filename = filename.replace("/","-");
         System.out.println(filename);
         FileWriter writer = new FileWriter(filename);
         //Get response from server

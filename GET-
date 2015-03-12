@@ -1,8 +1,8 @@
 HTTP/1.1 200 OK
-Date: Wed, 11 Mar 2015 15:09:08 GMT
+Date: Thu, 12 Mar 2015 13:32:34 GMT
 Server: Apache
 X-Powered-By: PHP/5.4.4
-Set-Cookie: PHPSESSID=dla0ji8tcg1k6qit6bf6asgjd0; path=/
+Set-Cookie: PHPSESSID=lk4qktvk4l2gndfp6fpd8t0v44; path=/
 Expires: Thu, 19 Nov 1981 08:52:00 GMT
 Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
 Pragma: no-cache
