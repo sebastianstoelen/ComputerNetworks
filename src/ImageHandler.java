@@ -64,11 +64,13 @@ public class ImageHandler {
             System.out.println(response);
         }
 		try {
+			System.out.println("YES");
             image = ImageIO.read(s_in);
- 
-            ImageIO.write(image, "jpg",new File("out.jpg"));
-            ImageIO.write(image, "gif",new File("out.gif"));
-            ImageIO.write(image, "png",new File("out.png"));
+            String fileName = img;
+            System.out.println(fileName);
+            ImageIO.write(image, "jpg",new File(fileName + ".jpg"));
+            ImageIO.write(image, "gif",new File(fileName +".gif"));
+            ImageIO.write(image, "png",new File(fileName +".png"));
  
         } catch (IOException e) {
         	e.printStackTrace();
