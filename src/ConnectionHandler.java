@@ -20,6 +20,7 @@ public class ConnectionHandler implements Runnable {
 	String command;
 	String URI;
 	String version;
+	String code;
 	
 	public ConnectionHandler(Socket socket){
 		client = socket;
@@ -37,16 +38,22 @@ public class ConnectionHandler implements Runnable {
             String clientSentence;
             String totalMessage = "";
             // Read text from the client, make it uppercase and write it back.
-            do{
-                clientSentence = inFromClient.readLine();
+            clientSentence = inFromClient.readLine();
+            while (clientSentence.length()>0){
                 totalMessage = totalMessage  + clientSentence + "\r\n";
+                clientSentence = inFromClient.readLine();
                 
-            } while (clientSentence.length()>1);
+            } ;
             getArguments(totalMessage);
             System.out.println("Received: " + totalMessage);
+            if (command.equals("GET")){
+            	System.out.println("binnen");
+            	System.out.println(getCommand());
+            	outToClient.writeBytes(getCommand());
+            }
             
             String capsSentence = totalMessage.toUpperCase() + '\n';
-            outToClient.writeBytes(capsSentence);
+            //outToClient.writeBytes(capsSentence);
             System.out.println("command: "+ command);}
             catch (IOException e) {
 				e.printStackTrace();
@@ -55,10 +62,25 @@ public class ConnectionHandler implements Runnable {
 		
 	}
 
+	private String getCommand() {
+		String returnMessage;
+		File f = new File(URI);
+		if(f.exists() && !f.isDirectory()) {
+			code = "200 OK";
+		}
+		code = "200 OK";
+		returnMessage = version  + code;
+		returnMessage = returnMessage.replace("\r\n", " ");
+		return returnMessage;
+	}
+
 	private void getArguments(String totalMessage) {
 		String[] arguments = totalMessage.split(" ");
 		command = arguments[0];
 		URI = arguments[1];
+		if (URI.equals("/")){
+			URI = "index.html";
+		}
 		version = arguments[2];
 		
 	}
