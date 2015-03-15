@@ -32,6 +32,7 @@ public class HTTPClient {
         //String version = args[3];
         String version = "1.0";
         System.out.println("Before try");
+        
         try{
             s.connect(new InetSocketAddress(host, port));
             System.out.println("Connected");
@@ -47,37 +48,64 @@ public class HTTPClient {
             System.err.println("Don't know about host: " + host);
             System.exit(1);
         }
-        String sentence;
-        String totalSentence = "";
-        if (command.equals("PUT")){
-            BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-            do{
-                sentence = inFromUser.readLine();
-                totalSentence = totalSentence  + sentence + "\r\n";
-            } while(sentence.length()>0);
+        while(true){
+        	String totalSentence = "";
+	        if (command.equals("PUT")){
+	        	totalSentence = putCommand();
+	        }
+	        //Send message to server
+	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
+	        System.out.println(message);
+	        s_out.println(message); 
+	        String filename = command + "-" + URI.substring(1);
+	        filename = filename.replace("/","-");
+	        System.out.println(filename);
+	        FileWriter writer = new FileWriter(filename);
+	        //Get response from server
+	        String response;
+	        while ((response = s_in.readLine()) != null){
+	            System.out.println(response);
+	            writer.append(response);
+	            writer.append("\r\n");
+	        }
+	        writer.close();
+	        
+	        if (command.equals("GET")){
+	        	getCommand(filename, host, URI, port, version);
+	        }
+	        if (version.contains("1.0")){
+	        	s.close();
+	        	return;
+	        }
+	        else{
+	        	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+	        	String commandSentence = inFromUser.readLine();
+	        	if (commandSentence != null){
+	        		String[] arguments = commandSentence.split(" ");
+	        		command = arguments[0];
+	        		URI = arguments[1];
+	        		version = arguments[2].substring(5);
+	        	}
+	        }
         }
-
-        //Send message to server
-        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
-        System.out.println(message);
-        s_out.println(message);
-		
-        
-        String filename = command + "-" + URI.substring(1);
-        filename = filename.replace("/","-");
-        System.out.println(filename);
-        FileWriter writer = new FileWriter(filename);
-        //Get response from server
-        String response;
-        while ((response = s_in.readLine()) != null){
-            System.out.println(response);
-            writer.append(response);
-            writer.append('\n');
-        }
-        writer.close();
-
-        //send image strings to ImageHandler and create image files
-        File input = new File(filename);
+    }
+    
+    public static String putCommand() throws IOException{
+    	String sentence = "";
+    	String totalSentence = "";
+    	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+        do{
+            sentence = inFromUser.readLine();
+            totalSentence = totalSentence  + sentence + "\r\n";
+        } while(sentence.length()>0);
+        inFromUser.close();
+        return totalSentence;
+    }
+    
+    
+    public static void getCommand(String filename, String host, String URI, int port, String version) 
+    		throws IOException{
+    	File input = new File(filename);
         Document doc = Jsoup.parse(input, "UTF-8", host);
         Elements img = doc.getElementsByTag("img");
         String[] srcImages = new String[img.size()];
