@@ -75,11 +75,20 @@ public class HTTPClient {
             writer.append('\n');
         }
         writer.close();
+
+        //send image strings to ImageHandler and create image files
         File input = new File(filename);
         Document doc = Jsoup.parse(input, "UTF-8", host);
         Elements img = doc.getElementsByTag("img");
+        String[] srcImages = new String[img.size()];
+        int counter = 0;
         for (Element el : img){
+            String srcTag = el.attr("src");
+            srcImages[counter] = srcTag;
             System.out.println("image tag: " + el.attr("src"));
+            counter += 1;
         }
+        ImageHandler imageHandler = new ImageHandler(host, URI, port, Float.parseFloat(version));
+        imageHandler.createImages(srcImages);
     }
 }
