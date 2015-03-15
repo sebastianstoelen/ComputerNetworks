@@ -1,5 +1,10 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.nio.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.jsoup.Jsoup;
 import org.jsoup.parser.Parser;
@@ -8,6 +13,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+
+import java.text.*;
 
 import javax.imageio.ImageIO;
 
@@ -64,14 +71,35 @@ public class ConnectionHandler implements Runnable {
 
 	private String getCommand() {
 		String returnMessage;
-		File f = new File(URI);
+		File f = new File("Server/"+URI);
+		
 		if(f.exists() && !f.isDirectory()) {
 			code = "200 OK";
 		}
-		code = "200 OK";
+		else{
+			code = "404 BAD REQUEST";
+		}
 		returnMessage = version  + code;
 		returnMessage = returnMessage.replace("\r\n", " ");
+		String extra = extraMessage(f);
+		returnMessage = returnMessage + "\r\n" + extra;
 		return returnMessage;
+	}
+
+	private String extraMessage(File file) {
+		Date date = new Date();
+		Locale locale = new Locale("en");
+		SimpleDateFormat ft = 
+			      new SimpleDateFormat ("E',' dd MM yyyy hh:mm:ss zzz",locale);
+		ft.setTimeZone(TimeZone.getTimeZone("GMT"));
+		Path path = FileSystems.getDefault().getPath("Server",URI);
+		String type = "";
+		try {
+			type = Files.probeContentType(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "Date: " + ft.format(date) + "\r\n" + "Content-Type: " + type + "\r\n" + "Content-Length: " + file.length();
 	}
 
 	private void getArguments(String totalMessage) {
@@ -79,8 +107,9 @@ public class ConnectionHandler implements Runnable {
 		command = arguments[0];
 		URI = arguments[1];
 		if (URI.equals("/")){
-			URI = "index.html";
+			URI = "Index.html";
 		}
+		System.out.println("uri:"+ URI);
 		version = arguments[2];
 		
 	}
