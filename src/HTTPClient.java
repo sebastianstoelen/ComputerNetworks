@@ -20,15 +20,15 @@ public class HTTPClient {
 
     public static void main(String[] args) throws IOException{
         Socket s = new Socket();
-        String host = "localhost";
+        String host = "www.google.com";
         PrintWriter s_out = null;
         BufferedReader s_in = null;
         //String command = args[0];
         String command = "GET";
         //String URI = args[1];
-        String URI = "/";
+        String URI = "/Index.html";
         //int port = Integer.parseInt(args[2]);
-        int port = 6789;
+        int port = 80;
         //String version = args[3];
         String version = "1.0";
         System.out.println("Before try");

@@ -57,14 +57,11 @@ public class ConnectionHandler implements Runnable {
             getArguments(totalMessage);
             System.out.println("Received: " + totalMessage);
             if (command.equals("GET")){
-            	System.out.println("binnen");
             	System.out.println(getCommand());
             	outToClient.writeBytes(getCommand());
             }
             
-            String capsSentence = totalMessage.toUpperCase() + '\n';
-            //outToClient.writeBytes(capsSentence);
-            System.out.println("command: "+ command);}
+            }
             catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -116,7 +113,6 @@ public class ConnectionHandler implements Runnable {
 		if (URI.equals("/")){
 			URI = "Index.html";
 		}
-		System.out.println("uri:"+ URI);
 		version = arguments[2];
 		
 	}
