@@ -53,14 +53,19 @@ public class ConnectionHandler implements Runnable {
                 totalMessage = totalMessage  + clientSentence + "\r\n";
                 clientSentence = inFromClient.readLine();
                 
-            } ;
+            } 
             getArguments(totalMessage);
             System.out.println("Received: " + totalMessage);
             if (command.equals("GET")){
             	System.out.println(getCommand());
             	outToClient.writeBytes(getCommand());
             }
+            outToClient.close();
             
+            if (version.contains("1.0")){
+            	client.close();
+            	return;
+            }
             }
             catch (IOException e) {
 				e.printStackTrace();
@@ -94,7 +99,7 @@ public class ConnectionHandler implements Runnable {
 		Date date = new Date();
 		Locale locale = new Locale("en");
 		SimpleDateFormat ft = 
-			      new SimpleDateFormat ("E',' dd MM yyyy hh:mm:ss zzz",locale);
+			      new SimpleDateFormat ("E',' dd MM yyyy HH:mm:ss zzz",locale);
 		ft.setTimeZone(TimeZone.getTimeZone("GMT"));
 		Path path = FileSystems.getDefault().getPath("Server",URI);
 		String type = "";
