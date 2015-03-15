@@ -1,19 +1,12 @@
-//Import necessary IO and NETwork libraries
+
 import java.io.*;
 import java.net.*;
 
-/*
- * A simple example TCP Server application
- *
- * Computer Networks, KU Leuven.
- *
- */
+
 class HTTPServer
 {
 
-    /*
-     * Everything is included in the main method.
-     */
+    
     public static void main(String argv[]) throws Exception
     {
         // Create server (incoming) socket on port 6789.
@@ -22,9 +15,10 @@ class HTTPServer
         // Wait for a connection to be made to the server socket.
         while(true)
         {
-            // Create	 a 'real' socket from the Server socket.
+            // Create	 a 'real' socket  and a thread from the Server socket.
             Socket connectionSocket = welcomeSocket.accept();
             Runnable connectionHandler = new ConnectionHandler(connectionSocket);
+            // Call connectionHandler to andle the incoming and outgoing data from socket.
             new Thread(connectionHandler).start();
 
         } 
