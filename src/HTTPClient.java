@@ -26,7 +26,7 @@ public class HTTPClient {
         //String command = args[0];
         String command = "GET";
         //String URI = args[1];
-        String URI = "/Index.html";
+        String URI = "/";
         //int port = Integer.parseInt(args[2]);
         int port = 6789;
         //String version = args[3];
@@ -58,7 +58,7 @@ public class HTTPClient {
         }
 
         //Send message to server
-        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
+        String message = command + " " + URI + " HTTP/" + version +"\r\n"+ "If-Modified-Since: Sun, 06 Nov 2015 08:49:37 GMT" + "\r\n" + totalSentence + "\r\n\r\n" ;
         System.out.println(message);
         s_out.println(message);
 		
