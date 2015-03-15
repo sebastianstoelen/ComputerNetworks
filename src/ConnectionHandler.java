@@ -2,9 +2,12 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.nio.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.jsoup.Jsoup;
 import org.jsoup.parser.Parser;
@@ -72,7 +75,7 @@ public class ConnectionHandler implements Runnable {
 	private String getCommand() {
 		String returnMessage;
 		File f = new File("Server/"+URI);
-		
+		Path path = f.toPath();
 		if(f.exists() && !f.isDirectory()) {
 			code = "200 OK";
 		}
@@ -82,7 +85,11 @@ public class ConnectionHandler implements Runnable {
 		returnMessage = version  + code;
 		returnMessage = returnMessage.replace("\r\n", " ");
 		String extra = extraMessage(f);
-		returnMessage = returnMessage + "\r\n" + extra;
+		try {
+			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return returnMessage;
 	}
 
@@ -113,5 +120,12 @@ public class ConnectionHandler implements Runnable {
 		version = arguments[2];
 		
 	}
+	
+	static String readFile(Path path, Charset encoding) 
+			  throws IOException 
+			{
+			  byte[] encoded = Files.readAllBytes(path);
+			  return new String(encoded, encoding);
+			}
 
 }
