@@ -8,9 +8,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
-
 import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
 
 /**
@@ -20,19 +18,23 @@ public class HTTPClient {
 
     public static void main(String[] args) throws IOException{
         Socket s = new Socket();
-        String host = "www.google.com";
         PrintWriter s_out = null;
         BufferedReader s_in = null;
-        //String command = args[0];
-        String command = "GET";
-        //String URI = args[1];
-        String URI = "/Index.html";
-        //int port = Integer.parseInt(args[2]);
-        int port = 80;
-        //String version = args[3];
-        String version = "1.0";
-        System.out.println("Before try");
-        
+        String command = args[0];
+        int port = Integer.parseInt(args[2]);
+        String version = args[3];
+        String host;
+        String URI;
+        if (version.equals("1.0")){
+            host = extractHost(args[1])[0];
+            URI = extractHost(args[1])[1];
+        }
+        else {
+        	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        	System.out.print("Host: ");
+        	host = inFromUser.readLine();
+        	URI = args[1];
+        }
         try{
             s.connect(new InetSocketAddress(host, port));
             System.out.println("Connected");
@@ -61,9 +63,10 @@ public class HTTPClient {
 	        filename = filename.replace("/","-");
 	        System.out.println(filename);
 	        FileWriter writer = new FileWriter(filename);
+	        
 	        //Get response from server
 	        String response;
-	        while ((response = s_in.readLine()) != null){
+	        while (!((response = s_in.readLine()) == null) && s_in.ready()){
 	            System.out.println(response);
 	            writer.append(response);
 	            writer.append("\r\n");
@@ -77,20 +80,22 @@ public class HTTPClient {
 	        	s.close();
 	        	return;
 	        }
-	        else{
-	        	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-	        	String commandSentence = inFromUser.readLine();
-	        	if (commandSentence != null){
-	        		String[] arguments = commandSentence.split(" ");
-	        		command = arguments[0];
-	        		URI = arguments[1];
-	        		version = arguments[2].substring(5);
-	        	}
+        	System.out.println("Enter new HTTP command. Type 'exit' to escape.");
+        	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+        	String commandSentence = inFromUser.readLine();
+        	if (commandSentence != null){
+        		if (commandSentence.toLowerCase().equals("exit")){
+        			return;
+        		}
+        		String[] arguments = commandSentence.split(" ");
+        		command = arguments[0];
+        		URI = arguments[1];
+        		version = arguments[2].substring(5);
 	        }
         }
     }
     
-    public static String putCommand() throws IOException{
+    private static String putCommand() throws IOException{
     	String sentence = "";
     	String totalSentence = "";
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
@@ -101,9 +106,8 @@ public class HTTPClient {
         inFromUser.close();
         return totalSentence;
     }
-    
-    
-    public static void getCommand(String filename, String host, String URI, int port, String version) 
+      
+    private static void getCommand(String filename, String host, String URI, int port, String version) 
     		throws IOException{
     	File input = new File(filename);
         Document doc = Jsoup.parse(input, "UTF-8", host);
@@ -118,5 +122,13 @@ public class HTTPClient {
         }
         ImageHandler imageHandler = new ImageHandler(host, URI, port, Float.parseFloat(version));
         imageHandler.createImages(srcImages);
+    }
+    
+    private static String[] extractHost(String fullAdress){
+    	int index = fullAdress.indexOf('/');
+    	String host = fullAdress.substring(0, index);
+    	String URI = fullAdress.substring(index);
+    	String[] re = {host, URI};
+    	return re;
     }
 }
