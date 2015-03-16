@@ -25,6 +25,7 @@ public class HTTPClient {
         String version = args[3];
         String host;
         String URI;
+        String totalSentence = ""; //the information to be appended after the command (e.g. Host: ...)
         if (version.equals("1.0")){
             host = extractHost(args[1])[0];
             URI = extractHost(args[1])[1];
@@ -34,6 +35,7 @@ public class HTTPClient {
         	System.out.print("Host: ");
         	host = inFromUser.readLine();
         	URI = args[1];
+        	totalSentence = ("Host: " + host);
         }
         try{
             s.connect(new InetSocketAddress(host, port));
@@ -50,10 +52,9 @@ public class HTTPClient {
             System.err.println("Don't know about host: " + host);
             System.exit(1);
         }
-        while(true){
-        	String totalSentence = "";
+        while(true){;
 	        if (command.equals("PUT")){
-	        	totalSentence = putCommand();
+	        	totalSentence = putCommand(totalSentence);
 	        }
 	        //Send message to server
 	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
@@ -89,7 +90,8 @@ public class HTTPClient {
         		}
         	}
         	String commandSentence = inFromUser.readLine();
-        	System.out.println("YOOOO");
+        	System.out.print("Host: ");
+        	totalSentence = inFromUser.readLine();
         	if (commandSentence != null){
         		if (commandSentence.toLowerCase().equals("exit")){
         			return;
@@ -102,9 +104,9 @@ public class HTTPClient {
         }
     }
     
-    private static String putCommand() throws IOException{
+    private static String putCommand(String currentSentence) throws IOException{
     	String sentence = "";
-    	String totalSentence = "";
+    	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
         do{
             sentence = inFromUser.readLine();
