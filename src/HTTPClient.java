@@ -64,8 +64,9 @@ public class HTTPClient {
 	        FileWriter writer = new FileWriter(filename);
 	        
 	        //Get response from server
-	        String response;
-	        while (!((response = s_in.readLine()) == null) && s_in.ready()){
+	        String response = "";
+	        while (!response.equals("penis")){
+	        	response = s_in.readLine();
 	            System.out.println(response);
 	            writer.append(response);
 	            writer.append("\r\n");
