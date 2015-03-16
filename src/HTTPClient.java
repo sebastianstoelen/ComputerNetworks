@@ -70,6 +70,7 @@ public class HTTPClient {
 	            writer.append(response);
 	            writer.append("\r\n");
 	        }
+	        System.out.println("UUUUUUUIIIIT");
 	        writer.close();
 	        
 	        if (command.equals("GET")){
@@ -87,6 +88,7 @@ public class HTTPClient {
         		}
         	}
         	String commandSentence = inFromUser.readLine();
+        	System.out.println("YOOOO");
         	if (commandSentence != null){
         		if (commandSentence.toLowerCase().equals("exit")){
         			return;
