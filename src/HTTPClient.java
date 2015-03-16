@@ -59,8 +59,7 @@ public class HTTPClient {
 	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
 	        System.out.println(message);
 	        s_out.println(message); 
-	        String filename = command + "-" + URI.substring(1);
-	        filename = filename.replace("/","-");
+	        File filename = createFile(URI);
 	        System.out.println(filename);
 	        FileWriter writer = new FileWriter(filename);
 	        
@@ -82,6 +81,11 @@ public class HTTPClient {
 	        }
         	System.out.println("Enter new HTTP command. Type 'exit' to escape.");
         	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+        	while (! inFromUser.ready()){ //check if socket is still connected while the user is not done typing
+        		if (! s.isConnected()){
+        			return;
+        		}
+        	}
         	String commandSentence = inFromUser.readLine();
         	if (commandSentence != null){
         		if (commandSentence.toLowerCase().equals("exit")){
@@ -107,9 +111,8 @@ public class HTTPClient {
         return totalSentence;
     }
       
-    private static void getCommand(String filename, String host, String URI, int port, String version) 
+    private static void getCommand(File input, String host, String URI, int port, String version) 
     		throws IOException{
-    	File input = new File(filename);
         Document doc = Jsoup.parse(input, "UTF-8", host);
         Elements img = doc.getElementsByTag("img");
         String[] srcImages = new String[img.size()];
@@ -130,5 +133,20 @@ public class HTTPClient {
     	String URI = fullAdress.substring(index);
     	String[] re = {host, URI};
     	return re;
+    }
+    
+    public static File createFile(String URI) {
+    	int cutIndex = URI.lastIndexOf('/');
+    	String directories = URI.substring(0,cutIndex); //get the path to the file
+    	if (directories.length() > 1){
+    		File dirs = new File(directories.substring(1)); //make the necessary directories
+    		Boolean result = dirs.mkdirs();
+    		System.out.println("Created directories? " + result.toString());
+    	}
+    	if (URI.equals("/")){ // / will become /index.hmtl, otherwise the file cannot be created
+    		URI = "/index.html";
+    	}
+    	File newFile = new File(URI.substring(1));
+    	return newFile;
     }
 }
