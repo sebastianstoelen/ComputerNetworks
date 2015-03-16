@@ -60,8 +60,10 @@ public class ConnectionHandler implements Runnable {
 				long tijd1 = date.getTime();
 				while(!inFromClient.ready()){
 					long tijd2 =new Date().getTime();
-					if ((tijd2-tijd1)>1500){
+					if ((tijd2-tijd1)>30000){
+						outToClient.close();
 						client.close();
+						System.out.println("Tis gedaan");
 						return;
 					}
 				}
@@ -79,6 +81,7 @@ public class ConnectionHandler implements Runnable {
 				System.out.println("Received: " + totalMessage);
 				// Checks which command was received and calls the corresponding method.
 				if (command.equals("GET")){
+					System.out.println("GET");
 					System.out.println(getCommand());
 					outToClient.writeBytes(getCommand());
 				}
@@ -99,10 +102,11 @@ public class ConnectionHandler implements Runnable {
 				
 				
 				// Closes the outputstream.
-				outToClient.close();
 				// If the HTTP version is 1.0 closes the socket of the client and ends the run method thus closing the thread.
 				if (version.contains("1.0")){
+					outToClient.close();
 					client.close();
+					System.out.println("Tis gedaan");
 					return;
 				}
             }
@@ -115,7 +119,7 @@ public class ConnectionHandler implements Runnable {
 	}
 
 	private String postCommand(String data) {
-		boolean modifiedSince = false;
+		boolean modifiedSince = true;
 		String returnMessage;
 		File f = new File("Server/"+URI);
 		Path path = f.toPath();
@@ -177,7 +181,7 @@ public class ConnectionHandler implements Runnable {
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
 					Date check = ft.parse(modifier);
-					if (!(modifiedSince = oud.compareTo(check) > 0)){
+					if ((modifiedSince = oud.compareTo(check) > 0)){
 						code = "304 NOT MODIFIED";
 					}
 				} catch (ParseException e) {
@@ -188,7 +192,7 @@ public class ConnectionHandler implements Runnable {
 		returnMessage = version + " "  + code;
 		returnMessage = returnMessage.replace("\r\n", "");
 		String extra = extraMessage(f);
-		if (!modifiedSince){
+		if (modifiedSince){
 			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			return returnMessage;
 		}
@@ -218,7 +222,7 @@ public class ConnectionHandler implements Runnable {
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
 					Date check = ft.parse(modifier);
-					if (!(modifiedSince = oud.compareTo(check) > 0)){
+					if ((modifiedSince = oud.compareTo(check) > 0)){
 						code = "304 NOT MODIFIED";
 					}
 				} catch (ParseException e) {
@@ -229,7 +233,7 @@ public class ConnectionHandler implements Runnable {
 		returnMessage = version + " "  + code;
 		returnMessage = returnMessage.replace("\r\n", "");
 		String extra = extraMessage(f);
-		if (!modifiedSince){
+		if (modifiedSince){
 			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			return returnMessage;
 		}
