@@ -56,6 +56,16 @@ public class ConnectionHandler implements Runnable {
 				String clientSentence;
 				// Variable where every line read from the reader is appended to.
 				String totalMessage = "";
+				Date date = new Date();
+				long tijd1 = date.getTime();
+				while(!inFromClient.ready()){
+					long tijd2 =new Date().getTime();
+					if ((tijd2-tijd1)>1500){
+						client.close();
+						return;
+					}
+				}
+					
 				clientSentence = inFromClient.readLine();
 				while (clientSentence.length()>0){
 					if (clientSentence.contains("If-Modified-Since")){
@@ -117,8 +127,6 @@ public class ConnectionHandler implements Runnable {
 			if ((modified != null )){
 				Date oud = new Date(f.lastModified());
 				String modifier = modified.substring(19);
-				System.out.println("modifier");
-				System.out.println(modifier);
 				SimpleDateFormat ft = 
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
@@ -165,8 +173,6 @@ public class ConnectionHandler implements Runnable {
 			if ((modified != null)){
 				Date oud = new Date(f.lastModified());
 				String modifier = modified.substring(19);
-				System.out.println("modifier");
-				System.out.println(modifier);
 				SimpleDateFormat ft = 
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
@@ -208,8 +214,6 @@ public class ConnectionHandler implements Runnable {
 			if ((modified != null && f.exists())){
 				Date oud = new Date(f.lastModified());
 				String modifier = modified.substring(19);
-				System.out.println("modifier");
-				System.out.println(modifier);
 				SimpleDateFormat ft = 
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {

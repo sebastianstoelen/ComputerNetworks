@@ -20,7 +20,7 @@ public class ImageHandler {
 	int port = 80;
 	double httpVersion = 1.0;
 	DataInputStream Z;
-	public ImageHandler(String clientHost, String clientURI, int clientPort, float clientHttpVersion){
+	public ImageHandler(String clientHost, String clientURI, int clientPort, double clientHttpVersion){
 		host = clientHost;
 		URI = clientURI;
 		port = clientPort;
@@ -28,7 +28,7 @@ public class ImageHandler {
 	}
 	
 	public static void main(String[] args) throws IOException{
-		ImageHandler handler = new ImageHandler("www.linux-ip.net","/images/logo-title.jpg",80,(float) 1.0);
+		ImageHandler handler = new ImageHandler("www.linux-ip.net","/images/logo-title.jpg",80, 1.1);
 		handler.extractImage("");
 	}
 	public void createImages(String[] images) throws IOException{
@@ -60,12 +60,20 @@ public class ImageHandler {
 		s_out.println(message);
 		BufferedImage image;
 		String response;
+		int size = 0;
         while (!((response = s_in.readLine()).equals(""))){
             System.out.println(response);
+            if (response.contains("Content-Length:")){
+            	size = Integer.parseInt(response.substring(16));
+            }
         }
+        System.out.println("Size:" + size);
+        byte[] buffer = new byte[1000];
+        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
+        s_in.read(buffer);
 		try {
             image = ImageIO.read(s_in);
-            String fileName = img;
+            String fileName = "crisis.jpg";
             fileName = fileName.replace('/','-');
             String [] files = fileName.split("\\.");
             ImageIO.write(image, files[1],new File(fileName));
