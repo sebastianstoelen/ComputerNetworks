@@ -64,13 +64,11 @@ public class ImageHandler {
             System.out.println(response);
         }
 		try {
-			System.out.println("YES");
             image = ImageIO.read(s_in);
             String fileName = img;
-            System.out.println(fileName);
-            ImageIO.write(image, "jpg",new File(fileName + ".jpg"));
-            ImageIO.write(image, "gif",new File(fileName +".gif"));
-            ImageIO.write(image, "png",new File(fileName +".png"));
+            fileName = fileName.replace('/','-');
+            String [] files = fileName.split("\\.");
+            ImageIO.write(image, files[1],new File(fileName));
  
         } catch (IOException e) {
         	e.printStackTrace();

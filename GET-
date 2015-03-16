@@ -1,5 +1,224 @@
-HTTP/1.0 304 NOT MODIFIED
-Date: Sun, 15 Mar 2015 16:36:12 GMT
+HTTP/1.0 200 OK
+Date: Sun, 15 Mar 2015 21:14:19 GMT
+Server: Boa/0.94.14rc21
+Accept-Ranges: bytes
+Connection: close
+Content-Length: 8215
+Last-Modified: Sat, 07 Jul 2007 02:46:14 GMT
 Content-Type: text/html
-Content-Length: 5
 
+<HTML>
+<HEAD>
+<TITLE>Guide to IP Layer Network Administration with Linux
+(http://linux-ip.net/)</TITLE>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+@import url("linux-ip.net.css");
+-->
+</style>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF LEFTMARGIN=0 TOPMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0>
+<!-- ImageReady Slices (ip.psd) -->
+<TABLE WIDTH=801 BORDER=0 align="center" CELLPADDING=0 CELLSPACING=0 class="body">
+  <!--DWLayoutTable-->
+  <TR> 
+    <TD height="111" COLSPAN=7> <IMG SRC="images/logo-title.jpg" ALT="Linux-IP-logo" WIDTH=800 HEIGHT=111 class="back"></TD>
+    <TD width="1"> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=111 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="52" COLSPAN=7> <IMG SRC="images/h-line.jpg" WIDTH=800 HEIGHT=52 ALT="H-line"></TD>
+    <TD> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=52 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD width="34" rowspan="13" valign="top"><img src="images/spacer.gif" width="34" height="300"></TD>
+    <TD width="1" height="18"></TD>
+    <TD width="419" valign="top"><!--DWLayoutEmptyCell-->&nbsp;</TD>
+    <TD width="46" ROWSPAN=13 valign="top"><img src="images/spacer.gif" width="44" height="300"></TD>
+    <TD width="1"></TD>
+    <TD width="28" ROWSPAN=22 valign="top"> <IMG SRC="images/v-line.jpg" ALT="V-line" WIDTH=28 HEIGHT=579 align="top"></TD>
+    <TD width="271" rowspan="2" valign="top"> <IMG SRC="images/online.jpg" WIDTH=271 HEIGHT=27 ALT="Onine Documentation"></TD>
+    <TD rowspan="3"> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=27 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD colspan="2" ROWSPAN=12 valign="top" bgcolor="#CCCC99">
+        <!-- tags for commenting out sections of text
+        -->
+        <br>
+        <p class="description">
+          The Guide to IP Layer Network Administration with Linux
+          was conceived as a project to document and provide examples for the
+          use of Linux-specific IP networking tools.
+        <!-- tags for commenting out sections of text
+          Although the majority of
+          this documentation is only applicable to Linux-based
+          systems, some of it is more generally applicable for any
+          IP-capable machine.
+        -->
+        </p>
+        <p class="description">
+          The book includes coverage of
+          the following topics:
+          network address translation (NAT),
+          address resolution protocol (ARP),
+          routing, and masquerading.
+          There is a nascent section on bridging, although the focus of the
+          documentation is the use of layer 3 Linux technologies.
+        </p>
+        <!-- tags for commenting out sections of text
+        -->
+        <p class="description">
+          Modeled after documents hosted at
+          <a href="http://www.tldp.org/">TLDP</a>, this effort is a
+          contribution to the Linux community undertaken of free will and
+          in free time.  I intend to release the completed guide to TLDP for
+          inclusion in the documentation repository.
+        </p>
+      <blockquote> 
+        <br><p align="left" class="contact">
+          <a href="mailto:martin@linux-ip.net" class="link">The
+          author</a> welcomes comments
+          <br>
+          and corrections on the content.
+          <br>
+        </p>
+        <p align="left" class="contact">
+          Page design by
+          <a href="mailto:jolma@jolma.net-NOSPAM" class="link">Jolma</a>.
+          <br>
+          Send
+          <a href="mailto:jolma@jolma.net-NOSPAM" class="link">comments</a> and
+          visit her
+          <a href="http://jolma.net/" class="link">web portfolio</a>.<br>
+        </p>
+      </blockquote></TD>
+    <TD height="9"></TD>
+  </TR>
+  <TR> 
+    <TD height="5"></TD>
+    <TD rowspan="3" valign="top"><blockquote> 
+        <p><a href="html/"             class="link">Chunked HTML</a><br>
+          <a href="html/linux-ip.html" class="link">Single-page HTML</a><br>
+          <a href="html/ax-links.html" class="link">Link page</a></p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="30">&nbsp;</TD>
+    <TD> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=27 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="16"></TD>
+    <TD rowspan="2"> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=27 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="14"></TD>
+    <TD rowspan="2" valign="top"> <IMG SRC="images/download.jpg" WIDTH=271 HEIGHT=27 ALT="Download Documentation"></TD>
+  </TR>
+  <TR> 
+    <TD height="13"></TD>
+    <TD rowspan="2"> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=26 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="13"></TD>
+    <TD rowspan="3" valign="top"><blockquote> 
+        <p><a href="linux-ip.pdf"
+        class="link">PDF</a><br>
+          <a href="linux-ip-chunk-html.tar.gz" 
+                                        class="link">Chunked HTML</a><br>
+          <a href="linux-ip-single-html.tar.gz"
+                                        class="link">Single-page HTML</a><br>
+          <a href="linux-ip.ps.gz"      class="link">PostScript</a><br>
+          <a href="linux-ip.dvi.gz"     class="link">DVI</a></p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="42">&nbsp;</TD>
+    <TD> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=27 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="32">&nbsp;</TD>
+    <TD rowspan="12"><IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=344 ALT=""></TD>
+  </TR>
+  <TR> 
+    <TD height="27">&nbsp;</TD>
+    <TD valign="top"><IMG SRC="images/source.jpg" WIDTH=271 HEIGHT=27 ALT="Source and Metadata"></TD>
+  </TR>
+  <TR> 
+    <TD height="87">&nbsp;</TD>
+    <TD valign="top"><blockquote> 
+        <p>
+          <a href="linux-ip-docbook.tar.gz" class="link">DocBook XML</a><br>
+          <a href="http://cvsview.tldp.org/index.cgi/LDP/guide/docbook/linux-ip/"
+                                          class="link">CVSview at TLDP</a><br>
+          <a href="ROADMAP"               class="link">Roadmap</a><br>
+          <a href="ACKNOWLEDGEMENTS"      class="link">Acknowledgements</a><br>
+          <a href="site-changelog.txt"    class="link">Site changelog</a></p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="21">&nbsp;</TD>
+    <TD rowspan="2" valign="top" class="body"><IMG SRC="images/articles.jpg" WIDTH=271 HEIGHT=26 ALT="Articles"></TD>
+  </TR>
+  <TR> 
+    <TD colspan="4" rowspan="9" valign="top"><!--DWLayoutEmptyCell-->&nbsp;</TD>
+    <TD height="5"></TD>
+  </TR>
+  <TR> 
+    <TD height="33"></TD>
+    <TD valign="top"><blockquote> 
+        <p>
+          <a href="articles/Traffic-Control-tcng-HTB-HOWTO.html"
+                                   class="link">HTB and tcng HOWTO</a><br/>
+          <a href="articles/Traffic-Control-HOWTO/"
+                                   class="link">Traffic Control HOWTO</a></p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="27"></TD>
+    <TD valign="top"><IMG SRC="images/other.jpg" WIDTH=271 HEIGHT=27 ALT="Other Documentation"></TD>
+  </TR>
+  <TR> 
+    <TD height="51"></TD>
+    <TD valign="top"><blockquote> 
+    <p><a href="gl/ip-cref/"      class="link">iproute2 manual (2.4.7)</a><br>
+       <a href="gl/ip-tunnels/"   class="link">ip tunnel manual</a><br>
+       <a href="gl/tcng/"         class="link">tcng manual (9h)</a><br>
+       <a href="code/tcng/"       class="link">tcng examples</a></br>
+       <a href="traffic-control/" class="link">Diagrams, et. al.</a><p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="27"></TD>
+    <TD valign="top"><img src="images/Author.jpg" alt="Author" width="271" height="27"></TD>
+  </TR>
+  <TR> 
+    <TD height="15"></TD>
+    <TD valign="top"><blockquote> 
+        <p><a href="author.html"   class="link">About the Author</a></p>
+      </blockquote></TD>
+  </TR>
+  <TR> 
+    <TD height="1"></TD>
+    <TD></TD>
+  </TR>
+  <TR> 
+    <TD height="214"></TD>
+    <TD ROWSPAN=2 valign="top"><img src="images/spacer.gif" alt="space" width="271" height="215"></TD>
+  </TR>
+  <TR> 
+    <TD height="19">&nbsp;</TD>
+    <TD> <IMG SRC="images/spacer.gif" WIDTH=1 HEIGHT=19 ALT=""></TD>
+  </TR>
+  <tr> 
+    <td height="0"></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</TABLE>
+<!-- End ImageReady Slices -->
+</BODY>
