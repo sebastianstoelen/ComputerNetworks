@@ -34,6 +34,8 @@ public class HTTPClient {
         	host = inFromUser.readLine();
         	URI = args[1];
         	totalSentence = ("Host: " + host);
+        	System.out.println("Host: " + host);
+        	System.out.println("URI: " + URI);
         }
         //connect to a new socket, given the host.
         try{
@@ -236,7 +238,8 @@ public class HTTPClient {
     		String ifModifiedSince = br.readLine();
     		br.close();
     		if (ifModifiedSince != null){
-    			message = message.substring(0, message.length() - 9);
+    			message = message.split("\r\n\r\n")[0];
+    			System.out.println(message);
     			message = message + "\r\n" + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
     		}
     	}
