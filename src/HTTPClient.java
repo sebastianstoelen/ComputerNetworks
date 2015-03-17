@@ -9,10 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import javax.imageio.ImageIO;
-
-import java.awt.image.BufferedImage;
-
 /**
  * Created by Sebastian Stoelen on 04/03/15.
  */
@@ -29,8 +25,8 @@ public class HTTPClient {
         String URI;
         String totalSentence = ""; //the information to be appended after the command (e.g. Host: ...)
         if (version.equals("1.0")){
-            host = extractHost(args[1])[0];
-            URI = extractHost(args[1])[1];
+            host = splitFullAddress(args[1])[0];
+            URI = splitFullAddress(args[1])[1];
         }
         else {
         	BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -39,6 +35,7 @@ public class HTTPClient {
         	URI = args[1];
         	totalSentence = ("Host: " + host);
         }
+        //connect to a new socket, given the host.
         try{
             s.connect(new InetSocketAddress(host, port));
             System.out.println("Connected");
@@ -48,21 +45,24 @@ public class HTTPClient {
             //reader for socket
             s_in = new DataInputStream(s.getInputStream());
         }
-        //Host not found
-
+        //Throw an error if the host is nod found
         catch(UnknownHostException e){
             System.err.println("Don't know about host: " + host);
             System.exit(1);
         }
-        while(true){;
+        while(true){
+        	// Construct the total message if the user issues a 'PUT' command.
 	        if (command.equals("PUT")){
 	        	totalSentence = putCommand(totalSentence);
 	        }
 	        //Send message to server
 	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
-	        System.out.println(message);
-	        s_out.println(message); 
 	        File filename = createFile(URI);
+	        if (command.equals("GET") && filename.exists()) {
+	        	message = addIfModifiedSince(message, filename);
+	        }
+	        System.out.println(message);
+	        s_out.println(message);
 	        System.out.println(filename);
 	        FileWriter writer = new FileWriter(filename);
 	        
@@ -70,7 +70,7 @@ public class HTTPClient {
 	        String response;
 	        int size =0;
 	        String lastModified = null;
-	        while (!((response = s_in.readLine()).equals(""))){
+	        while (!((response = s_in.readLine()).equals(""))){ //Read the header information the server has sent back.
 	            System.out.println(response);
 	            if (response.contains("Content-Length:")){
 	            	size = Integer.parseInt(response.substring(16));
@@ -86,7 +86,7 @@ public class HTTPClient {
 	        int sum = 0;
 	        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
 	        int amount;
-	        while (sum<size){
+	        while (sum<size){ //read the actual file from the server
 	        	amount = s_in.read(buffer,0,1000);
 	        	bufferSum.write(buffer,0,amount);
 	        	sum+=amount;
@@ -94,25 +94,29 @@ public class HTTPClient {
 	        writer.append(bufferSum.toString("UTF-8"));
 	        System.out.println("UUUUUUUIIIIT");
 	        writer.close();
+	        // set the last-modified of a file, if the server has returned this information.
 	        if (lastModified != null){
 	        	String fileURI = URI;
 	        	if (fileURI.equals("/")){ // / will become /index.hmtl, otherwise the file cannot be created
 	        		fileURI = "/index.html";
 	        	}
-	        	System.out.println(".");
-	        	System.out.println(fileURI.lastIndexOf('.'));
+	        	// Create (or overwrite) a cache file, containing the last-modified of the file.
 	        	File cacheFile = new File(fileURI.substring(1,fileURI.lastIndexOf('.'))+"cache"+".txt");
 	        	FileWriter cacheWriter = new FileWriter(cacheFile);
 	        	cacheWriter.write(lastModified);
 	        	cacheWriter.close();
 	        }
+	        //retrieve all the embedded images if the user issued a 'GET' command
 	        if (command.equals("GET")){
 	        	getCommand(filename, host, URI, port, version);
 	        }
+	        //exit after one command if the version of HTTP is 1.0 
 	        if (version.contains("1.0")){
 	        	s.close();
 	        	return;
 	        }
+        	// If the version of HTTP is 1.1, the client will prompt the user to give a new HTTP command. 
+        	// The necessary parameters will be changed accordingly.
         	System.out.println("Enter new HTTP command. Type 'exit' to escape.");
         	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
         	while (! inFromUser.ready()){ //check if socket is still connected while the user is not done typing
@@ -135,6 +139,12 @@ public class HTTPClient {
         }
     }
     
+    /*
+     * Method to construct the full message when the user executes a 'PUT' command.
+     * 
+     * @param currentSentence | The starting String to which the user input should be appended (this String can be empty).
+     * @returns totalSentece | The total message, the starting currentSentence appended with the user's input.
+     */
     private static String putCommand(String currentSentence) throws IOException{
     	String sentence = "";
     	String totalSentence = currentSentence;
@@ -146,7 +156,19 @@ public class HTTPClient {
         inFromUser.close();
         return totalSentence;
     }
-      
+    
+    /*
+     * Method to extract all the images embedded in the given URI.
+     * 
+     * @param input | The file from which the <img> tags should be fetched.
+     * @param host | The host server.
+     * @param URI | The URI of the input file.
+     * @param port | The port via which the client is connected to the server.
+     * @param version | The HTTP version.
+     * 
+     * @effect 	All images found in the input file will be created and stored at the right locations, i.e. in the right directories.
+     * 			If some images can't be fetched, for whatever reason, this image will be skipped.
+     */
     private static void getCommand(File input, String host, String URI, int port, String version) 
     		throws IOException{
         Document doc = Jsoup.parse(input, "UTF-8", host);
@@ -159,18 +181,33 @@ public class HTTPClient {
             System.out.println("image tag: " + el.attr("src"));
             counter += 1;
         }
+        URI = URI.substring(0, URI.lastIndexOf('/') + 1);
         ImageHandler imageHandler = new ImageHandler(host, URI, port, version);
         imageHandler.createImages(srcImages);
     }
     
-    private static String[] extractHost(String fullAdress){
-    	int index = fullAdress.indexOf('/');
-    	String host = fullAdress.substring(0, index);
-    	String URI = fullAdress.substring(index);
-    	String[] re = {host, URI};
-    	return re;
+    /*
+     * Method to split the given fullAddress in a host and a URI.
+     * 
+     * @param fullAddress | The full address 
+     * @returns | String[] splitAddress = {fullAddress.substring(0,fullAddress.indexOf('/),
+     * 													fullAddres.substring(fullAddress.indexOf('/')}
+     */
+    private static String[] splitFullAddress(String fullAddress){
+    	int index = fullAddress.indexOf('/');
+    	String host = fullAddress.substring(0, index);
+    	String URI = fullAddress.substring(index);
+    	String[] splitAddress = {host, URI};
+    	return splitAddress;
     }
     
+    /*
+     * Method to create all necessary directories to create the file to be fetched from a given host. This file will
+     * be created inside the (if any) created directories.
+     * 
+     * @param URI | The URI of the file to be created.
+     * @returns newFile | The newly created File.
+     */
     public static File createFile(String URI) {
     	int cutIndex = URI.lastIndexOf('/');
     	String directories = URI.substring(0,cutIndex); //get the path to the file
@@ -184,5 +221,36 @@ public class HTTPClient {
     	}
     	File newFile = new File(URI.substring(1));
     	return newFile;
+    }
+    
+    /*
+     * Method to add the If-Modified-Since header, if the file has a chache where the Modified-Since information is stored.
+     * 
+     * @param message | The previous message that should be sent to the server
+     * @param filename | The file from which the cache should be checked.
+     */
+    public static String addIfModifiedSince(String message, File filename) throws IOException{
+    	File cacheFile = new File(getCacheFromFile(filename));
+    	if ( cacheFile.exists()){
+    		BufferedReader br = new BufferedReader(new FileReader(cacheFile));
+    		String ifModifiedSince = br.readLine();
+    		br.close();
+    		if (ifModifiedSince != null){
+    			message = message.substring(0, message.length() - 9);
+    			message = message + "\r\n" + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
+    		}
+    	}
+    	return message;
+    }
+    
+    /*
+     * Method to get the name of the cache of the given file
+     * 
+     * @param filename | The file of which the cache should be found.
+     * @returns path.substring(0,path.lastIndexOf('.'))+"cache"+".txt"
+     */
+    public static String getCacheFromFile(File filename){
+    	String path = filename.getPath();
+    	return path.substring(0,path.lastIndexOf('.'))+"cache"+".txt";
     }
 }
