@@ -82,6 +82,7 @@ public class ConnectionHandler implements Runnable {
 				// Checks which command was received and calls the corresponding method.
 				if (command.equals("GET")){
 					System.out.println("GET");
+					System.out.println(getCommand());
 					outToClient.writeBytes(getCommand());
 					
 				}
@@ -158,7 +159,6 @@ public class ConnectionHandler implements Runnable {
 				writer.close();
 				String extra = extraMessage(f);
 				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
-				System.out.println(returnMessage);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -170,16 +170,17 @@ public class ConnectionHandler implements Runnable {
 		String returnMessage;
 		File f = new File("Server/"+URI);
 		Path path = f.toPath();
+		SimpleDateFormat ft = 
+			      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
+		ft.setTimeZone(TimeZone.getTimeZone("GMT"));
+		Date oud = new Date(f.lastModified());
 		if (!f.exists()){
 			code = "404 BAD REQUEST";
 		}
 		else {
 			code = "200 OK";
 			if ((modified != null)){
-				Date oud = new Date(f.lastModified());
 				String modifier = modified.substring(19);
-				SimpleDateFormat ft = 
-				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
 					Date check = ft.parse(modifier);
 					if (!(modifiedSince = oud.compareTo(check) > 0)){
@@ -199,8 +200,7 @@ public class ConnectionHandler implements Runnable {
 		}
 		else{
 		try {
-			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
-			System.out.println(returnMessage);
+			returnMessage = returnMessage + "\r\n" + extra +"\r\n" + "Last-Modified: " + ft.format(oud) + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
