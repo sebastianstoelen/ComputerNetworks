@@ -18,9 +18,9 @@ public class ImageHandler {
 	String host = "www.linux-ip.net";
 	String URI = "/images/logo-title.jpg";
 	int port = 80;
-	double httpVersion = 1.0;
+	String httpVersion;
 	DataInputStream Z;
-	public ImageHandler(String clientHost, String clientURI, int clientPort, double clientHttpVersion){
+	public ImageHandler(String clientHost, String clientURI, int clientPort, String clientHttpVersion){
 		host = clientHost;
 		URI = clientURI;
 		port = clientPort;
@@ -28,12 +28,13 @@ public class ImageHandler {
 	}
 	
 	public static void main(String[] args) throws IOException{
-		ImageHandler handler = new ImageHandler("www.linux-ip.net","/images/logo-title.jpg",80, 1.0);
+		ImageHandler handler = new ImageHandler("www.linux-ip.net","/images/logo-title.jpg",80, "1.0");
 		handler.extractImage("");
 	}
 	public void createImages(String[] images) throws IOException{
-		if (httpVersion == 1.0){
+		if (httpVersion.contains("1.0")){
 			for (String img : images){
+				System.out.println(img);
 				extractImage(img);
 			}
 		}
@@ -60,7 +61,7 @@ public class ImageHandler {
             System.exit(1);
         }
 		for (String img : images){
-			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n\r\n" ;
+			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host+ "\r\n\r\n" ;
 			System.out.println(message);
 			s_out.println(message);
 			BufferedImage image;
@@ -84,6 +85,10 @@ public class ImageHandler {
 	        byte[] array = bufferSum.toByteArray();
 			try {
 	            image = ImageIO.read(new ByteArrayInputStream(array));
+	            if (image==null){
+	            	System.out.println("No image received");
+	            	continue;
+	            }
 	            String fileName = img;
 	            fileName = fileName.replace('/','-');
 	            String [] files = fileName.split("\\.");
@@ -137,15 +142,19 @@ public class ImageHandler {
         byte[] array = bufferSum.toByteArray();
 		try {
             image = ImageIO.read(new ByteArrayInputStream(array));
-            String fileName = img;
-            fileName = fileName.replace('/','-');
-            String [] files = fileName.split("\\.");
-            ImageIO.write(image, files[1],new File(fileName));
+            if (image==null){
+            	System.out.println("No image received");
+            	return;
+            }
+            String fileName = URI + img;
+            String[] files = fileName.split("\\.");
+            ImageIO.write(image, files[files.length-1],HTTPClient.createFile(fileName));
  
         } catch (IOException e) {
         	e.printStackTrace();
 	}
 
 	}
+	
 	
 }

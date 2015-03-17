@@ -8,7 +8,9 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -19,7 +21,7 @@ public class HTTPClient {
     public static void main(String[] args) throws IOException{
         Socket s = new Socket();
         PrintWriter s_out = null;
-        BufferedReader s_in = null;
+        DataInputStream s_in = null;
         String command = args[0];
         int port = Integer.parseInt(args[2]);
         String version = args[3];
@@ -44,7 +46,7 @@ public class HTTPClient {
             //writer for socket
             s_out = new PrintWriter(s.getOutputStream(), true);
             //reader for socket
-            s_in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            s_in = new DataInputStream(s.getInputStream());
         }
         //Host not found
 
@@ -65,16 +67,45 @@ public class HTTPClient {
 	        FileWriter writer = new FileWriter(filename);
 	        
 	        //Get response from server
-	        String response = "";
-	        while (!response.equals("penis")){
-	        	response = s_in.readLine();
+	        String response;
+	        int size =0;
+	        String lastModified = null;
+	        while (!((response = s_in.readLine()).equals(""))){
 	            System.out.println(response);
+	            if (response.contains("Content-Length:")){
+	            	size = Integer.parseInt(response.substring(16));
+	            }
+	            if (response.contains("Last-Modified:")){
+	            	lastModified = response.substring(15);
+	            }
 	            writer.append(response);
 	            writer.append("\r\n");
 	        }
+	        writer.append("\r\n");
+	        byte[] buffer = new byte[1000];
+	        int sum = 0;
+	        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
+	        int amount;
+	        while (sum<size){
+	        	amount = s_in.read(buffer,0,1000);
+	        	bufferSum.write(buffer,0,amount);
+	        	sum+=amount;
+	        }
+	        writer.append(bufferSum.toString("UTF-8"));
 	        System.out.println("UUUUUUUIIIIT");
 	        writer.close();
-	        
+	        if (lastModified != null){
+	        	String fileURI = URI;
+	        	if (fileURI.equals("/")){ // / will become /index.hmtl, otherwise the file cannot be created
+	        		fileURI = "/index.html";
+	        	}
+	        	System.out.println(".");
+	        	System.out.println(fileURI.lastIndexOf('.'));
+	        	File cacheFile = new File(fileURI.substring(1,fileURI.lastIndexOf('.'))+"cache"+".txt");
+	        	FileWriter cacheWriter = new FileWriter(cacheFile);
+	        	cacheWriter.write(lastModified);
+	        	cacheWriter.close();
+	        }
 	        if (command.equals("GET")){
 	        	getCommand(filename, host, URI, port, version);
 	        }
@@ -128,7 +159,7 @@ public class HTTPClient {
             System.out.println("image tag: " + el.attr("src"));
             counter += 1;
         }
-        ImageHandler imageHandler = new ImageHandler(host, URI, port, Float.parseFloat(version));
+        ImageHandler imageHandler = new ImageHandler(host, URI, port, version);
         imageHandler.createImages(srcImages);
     }
     
