@@ -60,18 +60,18 @@ public class HTTPClient {
 	        //Send message to server
 	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
 	        File filename = createFile(URI);
-	        if (command.equals("GET") && filename.exists()) {
+	        if ((command.equals("GET") || command.equals("HEAD")) && filename.exists()) {
 	        	message = addIfModifiedSince(message, filename);
 	        }
 	        System.out.println(message);
 	        s_out.println(message);
 	        System.out.println(filename);
-	        FileWriter writer = new FileWriter(filename);
+	        FileWriter writer = new FileWriter(filename, true);
 	        
 	        //Get response from server
 	        String response;
-	        int size =0;
 	        String lastModified = null;
+	        int size =0;
 	        while (!((response = s_in.readLine()).equals(""))){ //Read the header information the server has sent back.
 	            System.out.println(response);
 	            if (response.contains("Content-Length:")){
@@ -80,22 +80,11 @@ public class HTTPClient {
 	            if (response.contains("Last-Modified:")){
 	            	lastModified = response.substring(15);
 	            }
-	            writer.append(response);
-	            writer.append("\r\n");
 	        }
-	        writer.append("\r\n");
-	        byte[] buffer = new byte[1000];
-	        int sum = 0;
-	        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
-	        int amount;
-	        while (sum<size){ //read the actual file from the server
-	        	amount = s_in.read(buffer,0,1000);
-	        	bufferSum.write(buffer,0,amount);
-	        	sum+=amount;
-	        }
-	        writer.append(bufferSum.toString("UTF-8"));
-	        System.out.println("UUUUUUUIIIIT");
-	        writer.close();
+	        //retrieve all the embedded images if the user issued a 'GET' command
+	        if (command.equals("GET")){
+	        	getCommand(filename, host, URI, port, version, writer, size, s_in);
+	        	
 	        // set the last-modified of a file, if the server has returned this information.
 	        if (lastModified != null){
 	        	String fileURI = URI;
@@ -108,9 +97,7 @@ public class HTTPClient {
 	        	cacheWriter.write(lastModified);
 	        	cacheWriter.close();
 	        }
-	        //retrieve all the embedded images if the user issued a 'GET' command
-	        if (command.equals("GET")){
-	        	getCommand(filename, host, URI, port, version);
+	        
 	        }
 	        //exit after one command if the version of HTTP is 1.0 
 	        if (version.contains("1.0")){
@@ -160,19 +147,37 @@ public class HTTPClient {
     }
     
     /*
-     * Method to extract all the images embedded in the given URI.
+     * Method to write the retreived file to disc and extract all the images embedded in the given URI.
      * 
      * @param input | The file from which the <img> tags should be fetched.
      * @param host | The host server.
      * @param URI | The URI of the input file.
      * @param port | The port via which the client is connected to the server.
      * @param version | The HTTP version.
+     * @param writer | the filewriter used to write to the right file
+     * @param size | the size of the file in bytes
+     * @param s_in | the dataInputStream to read the bytes from
      * 
      * @effect 	All images found in the input file will be created and stored at the right locations, i.e. in the right directories.
      * 			If some images can't be fetched, for whatever reason, this image will be skipped.
      */
-    private static void getCommand(File input, String host, String URI, int port, String version) 
+    private static void getCommand(File input, String host, String URI, int port, String version, 
+    		FileWriter writer, int size, DataInputStream s_in) 
     		throws IOException{
+    	writer.append("\r\n");
+        byte[] buffer = new byte[1000];
+        int sum = 0;
+        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
+        int amount;
+        while (sum<size){ //read the actual file from the server
+        	amount = s_in.read(buffer,0,1000);
+        	bufferSum.write(buffer,0,amount);
+        	sum+=amount;
+        }
+        System.out.println("\n");
+        System.out.println(bufferSum.toString("UTF-8"));
+        writer.write(bufferSum.toString("UTF-8").replaceAll("\n", "\r\n"));
+        writer.close();
         Document doc = Jsoup.parse(input, "UTF-8", host);
         Elements img = doc.getElementsByTag("img");
         String[] srcImages = new String[img.size()];
@@ -210,7 +215,7 @@ public class HTTPClient {
      * @param URI | The URI of the file to be created.
      * @returns newFile | The newly created File.
      */
-    public static File createFile(String URI) {
+    protected static File createFile(String URI) {
     	int cutIndex = URI.lastIndexOf('/');
     	String directories = URI.substring(0,cutIndex); //get the path to the file
     	if (directories.length() > 1){
@@ -231,7 +236,7 @@ public class HTTPClient {
      * @param message | The previous message that should be sent to the server
      * @param filename | The file from which the cache should be checked.
      */
-    public static String addIfModifiedSince(String message, File filename) throws IOException{
+    private static String addIfModifiedSince(String message, File filename) throws IOException{
     	File cacheFile = new File(getCacheFromFile(filename));
     	if ( cacheFile.exists()){
     		BufferedReader br = new BufferedReader(new FileReader(cacheFile));
@@ -252,7 +257,7 @@ public class HTTPClient {
      * @param filename | The file of which the cache should be found.
      * @returns path.substring(0,path.lastIndexOf('.'))+"cache"+".txt"
      */
-    public static String getCacheFromFile(File filename){
+    private static String getCacheFromFile(File filename){
     	String path = filename.getPath();
     	return path.substring(0,path.lastIndexOf('.'))+"cache"+".txt";
     }
