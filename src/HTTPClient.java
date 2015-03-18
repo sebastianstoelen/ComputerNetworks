@@ -127,8 +127,6 @@ public class HTTPClient {
         		}
         	}
         	String commandSentence = inFromUser.readLine();
-        	System.out.print("Host: ");
-        	totalSentence = inFromUser.readLine();
         	if (commandSentence != null){
         		if (commandSentence.toLowerCase().equals("exit")){
         			return;
@@ -138,6 +136,8 @@ public class HTTPClient {
         		URI = arguments[1];
         		version = arguments[2].substring(5);
 	        }
+        	System.out.print("Host: ");
+        	totalSentence = inFromUser.readLine();
         }
     }
     
