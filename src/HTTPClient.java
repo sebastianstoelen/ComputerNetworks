@@ -34,8 +34,13 @@ public class HTTPClient {
         	host = inFromUser.readLine();
         	URI = args[1];
         	totalSentence = ("Host: " + host);
-        	System.out.println("Host: " + host);
-        	System.out.println("URI: " + URI);
+        	System.out.print("Connection: ");
+        	String connection = inFromUser.readLine();
+        	if (connection.equals("")){
+        		connection = "keep-alive";
+        	}
+        	totalSentence = totalSentence + ("\r\n" + "Connection: " + connection);
+        	System.out.println("Total: " + totalSentence);
         }
         //connect to a new socket, given the host.
         try{
@@ -107,13 +112,13 @@ public class HTTPClient {
         	// If the version of HTTP is 1.1, the client will prompt the user to give a new HTTP command. 
         	// The necessary parameters will be changed accordingly.
         	System.out.println("Enter new HTTP command. Type 'exit' to escape.");
-        	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-        	while (! inFromUser.ready()){ //check if socket is still connected while the user is not done typing
+        	BufferedReader inFromUser1 = new BufferedReader( new InputStreamReader(System.in));
+        	while (! inFromUser1.ready()){ //check if socket is still connected while the user is not done typing
         		if (! s.isConnected()){
         			return;
         		}
         	}
-        	String commandSentence = inFromUser.readLine();
+        	String commandSentence = inFromUser1.readLine();
         	if (commandSentence != null){
         		if (commandSentence.toLowerCase().equals("exit")){
         			return;
@@ -124,7 +129,7 @@ public class HTTPClient {
         		version = arguments[2].substring(5);
 	        }
         	System.out.print("Host: ");
-        	totalSentence = inFromUser.readLine();
+        	totalSentence = inFromUser1.readLine();
         }
     }
     

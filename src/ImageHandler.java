@@ -61,7 +61,8 @@ public class ImageHandler {
             System.exit(1);
         }
 		for (String img : images){
-			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host+ "\r\n\r\n" ;
+			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host+ "\r\n" 
+								+ "Connection: keep-alive" + "\r\n\r\n";
 			System.out.println(message);
 			s_out.println(message);
 			BufferedImage image;
@@ -73,6 +74,7 @@ public class ImageHandler {
 	            	size = Integer.parseInt(response.substring(16));
 	            }
 	        }
+	        System.out.println("\r\n");
 	        byte[] buffer = new byte[1000];
 	        int sum = 0;
 	        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
@@ -136,6 +138,7 @@ public class ImageHandler {
             	size = Integer.parseInt(response.substring(16));
             }
         }
+        System.out.println("\r\n");
         byte[] buffer = new byte[1000];
         int sum = 0;
         ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
