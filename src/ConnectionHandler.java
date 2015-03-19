@@ -70,6 +70,7 @@ public class ConnectionHandler implements Runnable {
 				}
 					
 				while (!((clientSentence= inFromClient.readLine()).equals(""))){
+					System.out.println(clientSentence);
 					if (clientSentence.contains("If-Modified-Since")){
 						modified = clientSentence;
 					}
@@ -315,16 +316,13 @@ public class ConnectionHandler implements Runnable {
         ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
         int amount;
         while (sum<size){ //read the actual file from the server
-        	System.out.println("BUFFER");
         	amount = inFromClient.read(buffer,0,1000);
-        	System.out.println(amount);
         	bufferSum.write(buffer,0,amount);
         	sum+=amount;
         }
-        System.out.println("BUFFER");
-        System.out.println(bufferSum.toString("UTF-8"));
-        System.out.println("BUFFER");
-        writer.write(bufferSum.toString("UTF-8"));
+        String bufferString = bufferSum.toString();
+        bufferString = bufferString.substring(0, bufferString.length()-2);
+        writer.write(bufferString);
         writer.close();
 	}
 	
