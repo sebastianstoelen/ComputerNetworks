@@ -60,8 +60,8 @@ public class HTTPClient {
         }
         while(true){
         	// Construct the total message if the user issues a 'PUT' command.
-	        if (command.equals("PUT")){
-	        	totalSentence = putCommand(totalSentence);
+	        if (command.equals("PUT") || command.equals("POST")){
+	        	totalSentence = putOrPostCommand(totalSentence);
 	        }
 	        //Send message to server
 	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence ;
@@ -140,7 +140,7 @@ public class HTTPClient {
      * @param currentSentence | The starting String to which the user input should be appended (this String can be empty).
      * @returns totalSentece | The total message, the starting currentSentence appended with the user's input.
      */
-    private static String putCommand(String currentSentence) throws IOException{
+    private static String putOrPostCommand(String currentSentence) throws IOException{
     	String sentence = "";
     	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
