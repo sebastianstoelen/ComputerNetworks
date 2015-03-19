@@ -41,6 +41,7 @@ public class HTTPClient {
         	}
         	totalSentence = totalSentence + ("\r\n" + "Connection: " + connection);
         	System.out.println("Total: " + totalSentence);
+
         }
         //connect to a new socket, given the host.
         try{
@@ -63,7 +64,7 @@ public class HTTPClient {
 	        	totalSentence = putCommand(totalSentence);
 	        }
 	        //Send message to server
-	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
+	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence ;
 	        File filename = createFile(URI);
 	        if ((command.equals("GET") || command.equals("HEAD")) && filename.exists()) {
 	        	message = addIfModifiedSince(message, filename);
@@ -143,10 +144,17 @@ public class HTTPClient {
     	String sentence = "";
     	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-        do{
-            sentence = inFromUser.readLine();
-            totalSentence = totalSentence  + sentence + "\r\n";
-        } while(sentence.length()>0);
+    	System.out.print("Content-Length: ");
+    	
+        while (true){
+        	sentence= inFromUser.readLine();
+            if (!sentence.equals("exit")){
+            	totalSentence = totalSentence  + sentence ;
+            	totalSentence = totalSentence + "\r\n";
+            	break;
+            }
+            totalSentence = totalSentence  + sentence ;
+        }
         inFromUser.close();
         return totalSentence;
     }
