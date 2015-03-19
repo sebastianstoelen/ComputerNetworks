@@ -33,7 +33,7 @@ public class HTTPClient {
         	System.out.print("Host: ");
         	host = inFromUser.readLine();
         	URI = args[1];
-        	totalSentence = ("Host: " + host);
+        	totalSentence = ("Host: " + host );
         	System.out.println("Host: " + host);
         	System.out.println("URI: " + URI);
         }
@@ -58,7 +58,7 @@ public class HTTPClient {
 	        	totalSentence = putCommand(totalSentence);
 	        }
 	        //Send message to server
-	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence + "\r\n\r\n" ;
+	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence ;
 	        File filename = createFile(URI);
 	        if ((command.equals("GET") || command.equals("HEAD")) && filename.exists()) {
 	        	message = addIfModifiedSince(message, filename);
@@ -138,10 +138,16 @@ public class HTTPClient {
     	String sentence = "";
     	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-        do{
-            sentence = inFromUser.readLine();
-            totalSentence = totalSentence  + sentence + "\r\n";
-        } while(sentence.length()>0);
+    	System.out.print("Content-Length: ");
+    	
+        while (true){
+        	sentence= inFromUser.readLine();
+            if (!sentence.equals("exit")){
+            	totalSentence = totalSentence  + sentence ;
+            	totalSentence = totalSentence + "\r\n";
+            }
+            totalSentence = totalSentence  + sentence ;
+        }
         inFromUser.close();
         return totalSentence;
     }

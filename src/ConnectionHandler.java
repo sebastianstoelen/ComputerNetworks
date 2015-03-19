@@ -36,6 +36,7 @@ public class ConnectionHandler implements Runnable {
 	String version;
 	String code;
 	String modified;
+	int size;
 	/* Constuctor for connectionHandler.
 	 * @Param socket is the socket of the client connecting.
 	 */
@@ -47,9 +48,9 @@ public class ConnectionHandler implements Runnable {
 	public void run(){
 		while(true) {
 			// Create inputstream (convenient data reader) to this host.
-            BufferedReader inFromClient;
+            DataInputStream inFromClient;
 			try {
-				inFromClient = new BufferedReader(new InputStreamReader	(client.getInputStream()));
+				inFromClient = new DataInputStream(client.getInputStream());
 				// Create outputstream (convenient data writer) to this host.
 				DataOutputStream outToClient = new DataOutputStream(client.getOutputStream());
 				// Variable where every line the server reads is saved.
@@ -58,9 +59,9 @@ public class ConnectionHandler implements Runnable {
 				String totalMessage = "";
 				Date date = new Date();
 				long tijd1 = date.getTime();
-				while(!inFromClient.ready()){
+				while(inFromClient.available()==0){
 					long tijd2 =new Date().getTime();
-					if ((tijd2-tijd1)>30000){
+					if ((tijd2-tijd1)>60000){
 						outToClient.close();
 						client.close();
 						System.out.println("Tis gedaan");
@@ -68,13 +69,15 @@ public class ConnectionHandler implements Runnable {
 					}
 				}
 					
-				clientSentence = inFromClient.readLine();
-				while (clientSentence.length()>0){
+				while (!((clientSentence= inFromClient.readLine()).equals(""))){
 					if (clientSentence.contains("If-Modified-Since")){
 						modified = clientSentence;
 					}
+					if (clientSentence.contains("Content-Length:")){
+		            	size = Integer.parseInt(clientSentence.substring(16));
+		            }
+					
 					totalMessage = totalMessage  + clientSentence + "\r\n";
-					clientSentence = inFromClient.readLine();
 				} 
 				// Method to set the different connection variables.
 				getArguments(totalMessage);
@@ -90,13 +93,12 @@ public class ConnectionHandler implements Runnable {
 					outToClient.writeBytes(headCommand());
 				}
 				else if (command.equals("PUT")){
-					System.out.println(putCommand(totalMessage));
-					outToClient.writeBytes(putCommand(totalMessage));
+					outToClient.writeBytes(putCommand(inFromClient,size));
 				}
 				
 				else if (command.equals("POST")){
-					System.out.println(postCommand(totalMessage));
-					outToClient.writeBytes(postCommand(totalMessage));
+					System.out.println(postCommand(inFromClient,size));
+					outToClient.writeBytes(postCommand(inFromClient,size));
 				}
 				
 				
@@ -118,11 +120,10 @@ public class ConnectionHandler implements Runnable {
 		
 	}
 
-	private String postCommand(String data) {
+	private String postCommand(DataInputStream inFromClient,int size) {
 		boolean modifiedSince = true;
 		String returnMessage;
 		File f = new File("Server/"+URI);
-		Path path = f.toPath();
 		if (!f.exists()){
 			code = "404 BAD REQUEST";
 		}
@@ -152,12 +153,12 @@ public class ConnectionHandler implements Runnable {
 		}
 		else{
 			try {
-				FileWriter writer = new FileWriter("Server/" + URI,true);
-				String newFile = data.split("\r\n\r\n",2)[1];
-				writer.write(newFile);
+				
+				FileWriter writer = new FileWriter(URI,false);
+				writeMessage(inFromClient,size,writer);
 				writer.close();
 				String extra = extraMessage(f);
-				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
+				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -206,11 +207,10 @@ public class ConnectionHandler implements Runnable {
 		return returnMessage;}
 	}
 	
-	private String putCommand(String data) {
+	private String putCommand(DataInputStream inFromClient,int size) {
 		boolean modifiedSince = false;
 		String returnMessage;
 		File f = new File("Server/"+URI);
-		Path path = f.toPath();
 		if (f.isDirectory()){
 			code = "404 BAD REQUEST";
 		}
@@ -240,11 +240,10 @@ public class ConnectionHandler implements Runnable {
 		}
 		else{
 			try {
-				FileWriter writer = new FileWriter("Server/" + URI);
-				String newFile = data.split("\r\n\r\n")[1];
-				writer.write(newFile);
-				writer.close();
-				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
+				FileWriter writer = new FileWriter(f,false);
+				writeMessage(inFromClient,size,writer);
+				extra = extraMessage(f);
+				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -308,9 +307,28 @@ public class ConnectionHandler implements Runnable {
 			URI = "Index.html";
 		}
 		version = arguments[2];
-		
-		
 	}
+	
+	private void writeMessage(DataInputStream inFromClient, int size,FileWriter writer) throws IOException{
+		byte[] buffer = new byte[1000];
+        int sum = 0;
+        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
+        int amount;
+        while (sum<size){ //read the actual file from the server
+        	System.out.println("BUFFER");
+        	amount = inFromClient.read(buffer,0,1000);
+        	System.out.println(amount);
+        	bufferSum.write(buffer,0,amount);
+        	sum+=amount;
+        }
+        System.out.println("BUFFER");
+        System.out.println(bufferSum.toString("UTF-8"));
+        System.out.println("BUFFER");
+        writer.write(bufferSum.toString("UTF-8"));
+        writer.close();
+	}
+	
+	
 	
 	static String readFile(Path path, Charset encoding) 
 			  throws IOException 
