@@ -98,7 +98,6 @@ public class ConnectionHandler implements Runnable {
 				}
 				
 				else if (command.equals("POST")){
-					System.out.println(postCommand(inFromClient,size));
 					outToClient.writeBytes(postCommand(inFromClient,size));
 				}
 				
@@ -122,22 +121,22 @@ public class ConnectionHandler implements Runnable {
 	}
 
 	private String postCommand(DataInputStream inFromClient,int size) {
-		boolean modifiedSince = true;
+		boolean modifiedSince = false;
 		String returnMessage;
 		File f = new File("Server/"+URI);
-		if (!f.exists()){
+		if (f.isDirectory()){
 			code = "404 BAD REQUEST";
 		}
 		else {
 			code = "200 OK";
-			if ((modified != null )){
+			if ((modified != null && f.exists())){
 				Date oud = new Date(f.lastModified());
 				String modifier = modified.substring(19);
 				SimpleDateFormat ft = 
 				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 				try {
 					Date check = ft.parse(modifier);
-					if (!(modifiedSince = oud.compareTo(check) > 0)){
+					if ((modifiedSince = oud.compareTo(check) > 0)){
 						code = "304 NOT MODIFIED";
 					}
 				} catch (ParseException e) {
@@ -147,18 +146,16 @@ public class ConnectionHandler implements Runnable {
 		}
 		returnMessage = version + " "  + code;
 		returnMessage = returnMessage.replace("\r\n", "");
-		if (!modifiedSince){
-			String extra = extraMessage(f);
+		String extra = extraMessage(f);
+		if (modifiedSince){
 			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			return returnMessage;
 		}
 		else{
 			try {
-				
-				FileWriter writer = new FileWriter(URI,false);
+				FileWriter writer = new FileWriter(f,true);
 				writeMessage(inFromClient,size,writer);
-				writer.close();
-				String extra = extraMessage(f);
+				extra = extraMessage(f);
 				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -305,7 +302,7 @@ public class ConnectionHandler implements Runnable {
 		command = arguments[0];
 		URI = arguments[1];
 		if (URI.equals("/")){
-			URI = "Index.html";
+			URI = "/index.html";
 		}
 		version = arguments[2];
 	}
