@@ -15,21 +15,23 @@ import java.awt.image.BufferedImage;
 
 
 public class ImageHandler {
+	String httpVersion = null;
+	DataInputStream s_in = null;
+	PrintWriter s_out = null;
+	String host = null;
+	String URI = null;
+	int port;
 	public ImageHandler(String clientHost, String clientURI, int clientPort, String clientHttpVersion,
 						DataInputStream clientS_in, PrintWriter clientS_out){
-		String host = clientHost;
-		String URI = clientURI;
-		int port = clientPort;
-		String httpVersion = clientHttpVersion;
-		DataInputStream s_in = clientS_in;
-		PrintWriter s_out = clientS_out;
+		host = clientHost;
+		URI = clientURI;
+		port = clientPort;
+		httpVersion = clientHttpVersion;
+		s_in = clientS_in;
+		s_out = clientS_out;
 	}
 	
-	public static void main(String[] args) throws IOException{
-		ImageHandler handler = new ImageHandler("www.linux-ip.net","/images/logo-title.jpg",80, "1.0");
-		handler.extractImage("");
-	}
-	public void createImages(String[] images) throws IOException{
+	public void createImages(String[] images,DataInputStream clientS_in, PrintWriter clientS_out) throws IOException{
 		if (httpVersion.contains("1.0")){
 			for (String img : images){
 				System.out.println(img);
@@ -37,42 +39,25 @@ public class ImageHandler {
 			}
 		}
 		else{
-			extractImages(images);
+			extractImages(images,clientS_in, clientS_out);
 		}
 	}
 
-	private void extractImages(String[] images) throws IOException {
-		Socket s = new Socket();
-		PrintWriter s_out = null;
-		DataInputStream s_in = null;
-		try{
-            s.connect(new InetSocketAddress(host, port));
-            System.out.println("Connected");
-
-            //writer for socket
-            s_out = new PrintWriter(s.getOutputStream(), true);
-            //reader for socket
-            s_in = new DataInputStream(s.getInputStream());
-        }
-		catch(UnknownHostException e){
-            System.err.println("Don't know about host: " + host);
-            System.exit(1);
-        }
+	private void extractImages(String[] images,DataInputStream clientS_in, PrintWriter clientS_out) throws IOException {
+		PrintWriter s_out = clientS_out;
+		DataInputStream s_in = clientS_in;
 		for (String img : images){
-			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host+ "\r\n" 
-								+ "Connection: keep-alive" + "\r\n\r\n";
+			String fileName = URI + img;
+			File imgFile = new File(fileName);
+			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host
+								 + "\r\n" ;
+			message= HTTPClient.addIfModifiedSince(message, imgFile);
+			System.out.println("yolo");
 			System.out.println(message);
 			s_out.println(message);
 			BufferedImage image;
-			String response;
 			int size = 0;
-	        while (!((response = s_in.readLine()).equals(""))){
-	            System.out.println(response);
-	            if (response.contains("Content-Length:")){
-	            	size = Integer.parseInt(response.substring(16));
-	            }
-	        }
-	        System.out.println("\r\n");
+			size = parseHeader(s_in,img);
 	        byte[] buffer = new byte[1000];
 	        int sum = 0;
 	        ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
@@ -89,20 +74,13 @@ public class ImageHandler {
 	            	System.out.println("No image received");
 	            	continue;
 	            }
-	            String fileName = img;
-	            fileName = fileName.replace('/','-');
-	            String [] files = fileName.split("\\.");
-	            ImageIO.write(image, files[1],new File(fileName));
+	            
+	            String[] files = fileName.split("\\.");
+	            ImageIO.write(image, files[files.length-1],HTTPClient.createFile(fileName));
 	 
 	        } catch (IOException e) {
 	        	e.printStackTrace();
 	        }
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -123,20 +101,16 @@ public class ImageHandler {
             System.err.println("Don't know about host: " + host);
             System.exit(1);
         }
-		
+		String fileName = URI.substring(1) + img;
+		File imgFile = new File(fileName);
 		String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n\r\n" ;
+		message= HTTPClient.addIfModifiedSince(message, imgFile);
 		System.out.println(message);
 		s_out.println(message);
 		BufferedImage image;
-		String response;
+		
 		int size = 0;
-        while (!((response = s_in.readLine()).equals(""))){
-            System.out.println(response);
-            if (response.contains("Content-Length:")){
-            	size = Integer.parseInt(response.substring(16));
-            }
-        }
-        System.out.println("\r\n");
+		size = parseHeader(s_in,img);
         byte[] buffer = new byte[1000];
         int sum = 0;
         ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
@@ -153,14 +127,39 @@ public class ImageHandler {
             	System.out.println("No image received");
             	return;
             }
-            String fileName = URI + img;
             String[] files = fileName.split("\\.");
             ImageIO.write(image, files[files.length-1],HTTPClient.createFile(fileName));
- 
         } catch (IOException e) {
         	e.printStackTrace();
 	}
 
+	}
+
+	private int parseHeader(DataInputStream s_in,String img) throws IOException{
+		String response;
+		String lastModified = null;
+		int size = 0;
+		while (!((response = s_in.readLine()).equals(""))){
+	        System.out.println(response);
+	        if (response.contains("Last-Modified:")){
+	        	lastModified = response.substring(15);
+	        }
+	        if (response.contains("Content-Length:")){
+	        	size = Integer.parseInt(response.substring(16));
+	        }
+	    }
+	    if (lastModified != null){
+	    	String fileURI = URI+img;
+	    	if (fileURI.equals("/")){ // / will become /index.hmtl, otherwise the file cannot be created
+	    		fileURI = "/index.html";
+	    	}
+	    	// Create (or overwrite) a cache file, containing the last-modified of the file.
+	    	File cacheFile = new File(fileURI.substring(1,fileURI.lastIndexOf('.'))+"cache"+".txt");
+	    	FileWriter cacheWriter = new FileWriter(cacheFile);
+	    	cacheWriter.write(lastModified);
+	    	cacheWriter.close();
+	    }
+		return size;
 	}
 	
 	

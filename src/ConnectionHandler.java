@@ -85,12 +85,9 @@ public class ConnectionHandler implements Runnable {
 				System.out.println("Received: " + totalMessage);
 				// Checks which command was received and calls the corresponding method.
 				if (command.equals("GET")){
-					System.out.println("GET");
-					System.out.println(getCommand());
 					outToClient.writeBytes(getCommand());
 				}
 				else if (command.equals("HEAD")){
-					System.out.println(headCommand());
 					outToClient.writeBytes(headCommand());
 				}
 				else if (command.equals("PUT")){

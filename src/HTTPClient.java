@@ -23,7 +23,9 @@ public class HTTPClient {
         String version = args[3];
         String host;
         String URI;
-        String totalSentence = ""; //the information to be appended after the command (e.g. Host: ...)
+        String totalSentence = "";
+        String headerSentence = "";
+        //the information to be appended after the command (e.g. Host: ...)
         if (version.equals("1.0")){
             host = splitFullAddress(args[1])[0];
             URI = splitFullAddress(args[1])[1];
@@ -34,12 +36,11 @@ public class HTTPClient {
         	host = inFromUser.readLine();
         	URI = args[1];
         	totalSentence = ("Host: " + host);
-        	System.out.print("Connection: ");
-        	String connection = inFromUser.readLine();
-        	if (connection.equals("")){
-        		connection = "keep-alive";
-        	}
-        	totalSentence = totalSentence + ("\r\n" + "Connection: " + connection);
+//        	System.out.print("Connection: ");
+//        	String connection = inFromUser.readLine();
+//        	if (connection.equals("")){
+//        		connection = "keep-alive";
+//        	}
         	System.out.println("Total: " + totalSentence);
 
         }
@@ -64,7 +65,7 @@ public class HTTPClient {
 	        	totalSentence = putOrPostCommand(totalSentence);
 	        }
 	        //Send message to server
-	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence ;
+	        String message = command + " " + URI + " HTTP/" + version +"\r\n" + totalSentence+ "\r\n" ;
 	        File filename = createFile(URI);
 	        if ((command.equals("GET") || command.equals("HEAD")) && filename.exists()) {
 	        	message = addIfModifiedSince(message, filename);
@@ -72,13 +73,13 @@ public class HTTPClient {
 	        System.out.println(message);
 	        s_out.println(message);
 	        System.out.println(filename);
-	        FileWriter writer = new FileWriter(filename, true);
+	        FileWriter writer = new FileWriter(filename);
 	        
 	        //Get response from server
 	        String response;
 	        String lastModified = null;
 	        int size =0;
-	        while (!((response = s_in.readLine()).equals(""))){ //Read the header information the server has sent back.
+	        while (!((response = s_in.readLine())).equals("")){ //Read the header information the server has sent back.
 	            System.out.println(response);
 	            if (response.contains("Content-Length:")){
 	            	size = Integer.parseInt(response.substring(16));
@@ -171,7 +172,6 @@ public class HTTPClient {
     private static void getCommand(File input, String host, String URI, int port, String version, 
     		FileWriter writer, int size, DataInputStream s_in, PrintWriter s_out) 
     		throws IOException{
-    	writer.append("\r\n");
         byte[] buffer = new byte[1000];
         int sum = 0;
         ByteArrayOutputStream bufferSum = new ByteArrayOutputStream();
@@ -195,9 +195,10 @@ public class HTTPClient {
             System.out.println("image tag: " + el.attr("src"));
             counter += 1;
         }
-        URI = URI.substring(0, URI.lastIndexOf('/') + 1);
-        ImageHandler imageHandler = new ImageHandler(host, URI, port, version, s_in, s_out);
-        imageHandler.createImages(srcImages);
+        if (counter>1){
+	        URI = URI.substring(0, URI.lastIndexOf('/') + 1);
+	        ImageHandler imageHandler = new ImageHandler(host, URI, port, version, s_in, s_out);
+	        imageHandler.createImages(srcImages,s_in,s_out);}
     }
     
     /*
@@ -243,8 +244,9 @@ public class HTTPClient {
      * @param message | The previous message that should be sent to the server
      * @param filename | The file from which the cache should be checked.
      */
-    private static String addIfModifiedSince(String message, File filename) throws IOException{
+    protected static String addIfModifiedSince(String message, File filename) throws IOException{
     	File cacheFile = new File(getCacheFromFile(filename));
+    	System.out.println(cacheFile.toString());
     	if ( cacheFile.exists()){
     		BufferedReader br = new BufferedReader(new FileReader(cacheFile));
     		String ifModifiedSince = br.readLine();
@@ -264,7 +266,7 @@ public class HTTPClient {
      * @param filename | The file of which the cache should be found.
      * @returns path.substring(0,path.lastIndexOf('.'))+"cache"+".txt"
      */
-    private static String getCacheFromFile(File filename){
+    protected static String getCacheFromFile(File filename){
     	String path = filename.getPath();
     	return path.substring(0,path.lastIndexOf('.'))+"cache"+".txt";
     }
