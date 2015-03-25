@@ -15,16 +15,14 @@ import java.awt.image.BufferedImage;
 
 
 public class ImageHandler {
-	String host = "www.linux-ip.net";
-	String URI = "/images/logo-title.jpg";
-	int port = 80;
-	String httpVersion;
-	DataInputStream Z;
-	public ImageHandler(String clientHost, String clientURI, int clientPort, String clientHttpVersion){
-		host = clientHost;
-		URI = clientURI;
-		port = clientPort;
-		httpVersion = clientHttpVersion;
+	public ImageHandler(String clientHost, String clientURI, int clientPort, String clientHttpVersion,
+						DataInputStream clientS_in, PrintWriter clientS_out){
+		String host = clientHost;
+		String URI = clientURI;
+		int port = clientPort;
+		String httpVersion = clientHttpVersion;
+		DataInputStream s_in = clientS_in;
+		PrintWriter s_out = clientS_out;
 	}
 	
 	public static void main(String[] args) throws IOException{

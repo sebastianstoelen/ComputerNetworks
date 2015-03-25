@@ -89,7 +89,7 @@ public class HTTPClient {
 	        }
 	        //retrieve all the embedded images if the user issued a 'GET' command
 	        if (command.equals("GET")){
-	        	getCommand(filename, host, URI, port, version, writer, size, s_in);
+	        	getCommand(filename, host, URI, port, version, writer, size, s_in, s_out);
 	        	
 	        // set the last-modified of a file, if the server has returned this information.
 	        if (lastModified != null){
@@ -169,7 +169,7 @@ public class HTTPClient {
      * 			If some images can't be fetched, for whatever reason, this image will be skipped.
      */
     private static void getCommand(File input, String host, String URI, int port, String version, 
-    		FileWriter writer, int size, DataInputStream s_in) 
+    		FileWriter writer, int size, DataInputStream s_in, PrintWriter s_out) 
     		throws IOException{
     	writer.append("\r\n");
         byte[] buffer = new byte[1000];
@@ -196,7 +196,7 @@ public class HTTPClient {
             counter += 1;
         }
         URI = URI.substring(0, URI.lastIndexOf('/') + 1);
-        ImageHandler imageHandler = new ImageHandler(host, URI, port, version);
+        ImageHandler imageHandler = new ImageHandler(host, URI, port, version, s_in, s_out);
         imageHandler.createImages(srcImages);
     }
     
