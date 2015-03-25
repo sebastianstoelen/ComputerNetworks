@@ -37,6 +37,7 @@ public class ConnectionHandler implements Runnable {
 	String code;
 	String modified;
 	String connection;
+	String host = null;
 	int size;
 	/* Constuctor for connectionHandler.
 	 * @Param socket is the socket of the client connecting.
@@ -70,6 +71,9 @@ public class ConnectionHandler implements Runnable {
 					
 				while (!((clientSentence= inFromClient.readLine()).equals(""))){
 					System.out.println(clientSentence);
+					if (clientSentence.contains("Host")){
+						host = clientSentence.substring(6);
+					}
 					if (clientSentence.contains("If-Modified-Since")){
 						modified = clientSentence.substring(19);
 					}
@@ -82,6 +86,11 @@ public class ConnectionHandler implements Runnable {
 					
 					totalMessage = totalMessage  + clientSentence + "\r\n";
 				} 
+				if ( (version.contains("1.1")) & (host==null||host!="localhost") ){
+					outToClient.writeBytes(version + "400 BAD REQUEST");
+					client.close();
+					return;
+				}
 				// Method to set the different connection variables.
 				getArguments(totalMessage);
 				System.out.println("Received: " + totalMessage);
@@ -121,6 +130,7 @@ public class ConnectionHandler implements Runnable {
 				e.printStackTrace();
 			}
 			modified = null;
+			host = null;
 		}
 		
 	}
