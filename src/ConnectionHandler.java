@@ -88,7 +88,6 @@ public class ConnectionHandler implements Runnable {
 					totalMessage = totalMessage  + clientSentence + "\r\n";
 				} 
 				getArguments(totalMessage);
-				System.out.println("hosit"+ host);
 				if ( (version.contains("1.1")) & (host==null||!host.equals("localhost")) ){
 					outToClient.writeBytes(version + " 400 BAD REQUEST" + "\r\n" + extraMessage(null));
 					client.close();

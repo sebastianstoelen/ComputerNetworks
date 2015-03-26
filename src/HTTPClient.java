@@ -148,7 +148,7 @@ public class HTTPClient {
     	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
     	System.out.print("Content-Length: ");
-    	totalSentence = totalSentence+"\r\n"  + "Content-Length: " + inFromUser.readLine()+"\r\n";
+    	totalSentence = totalSentence  + "Content-Length: " + inFromUser.readLine()+"\r\n";
         while (!(sentence= inFromUser.readLine()).equals("exit")){
             totalSentence = totalSentence +"\r\n" + sentence ;
         }
