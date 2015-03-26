@@ -36,12 +36,12 @@ public class HTTPClient {
         	host = inFromUser.readLine();
         	URI = args[1];
         	totalSentence = ("Host: " + host);
-//        	System.out.print("Connection: ");
-//        	String connection = inFromUser.readLine();
-//        	if (connection.equals("")){
-//        		connection = "keep-alive";
-//        	}
-        	System.out.println("Total: " + totalSentence);
+	       	System.out.print("Connection: ");
+	       	String connection = inFromUser.readLine();
+	       	if (connection.equals("")){
+	       		connection = "keep-alive";
+	       	}
+	       	totalSentence = totalSentence + "\r\n"+  "Connection: " + connection;
 
         }
         //connect to a new socket, given the host.
@@ -73,12 +73,11 @@ public class HTTPClient {
 	        System.out.println(message);
 	        s_out.println(message);
 	        System.out.println(filename);
-	        FileWriter writer = new FileWriter(filename);
 	        
 	        //Get response from server
 	        String response;
 	        String lastModified = null;
-	        int size =0;
+	        int size =-1;
 	        while (!((response = s_in.readLine())).equals("")){ //Read the header information the server has sent back.
 	            System.out.println(response);
 	            if (response.contains("Content-Length:")){
@@ -90,7 +89,10 @@ public class HTTPClient {
 	        }
 	        //retrieve all the embedded images if the user issued a 'GET' command
 	        if (command.equals("GET")){
-	        	getCommand(filename, host, URI, port, version, writer, size, s_in, s_out);
+	        	if (size != -1){
+	        		FileWriter writer = new FileWriter(filename);
+	        		getCommand(filename, host, URI, port, version, writer, size, s_in, s_out);
+	        	}
 	        	
 	        // set the last-modified of a file, if the server has returned this information.
 	        if (lastModified != null){
@@ -146,7 +148,7 @@ public class HTTPClient {
     	String totalSentence = currentSentence;
     	BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
     	System.out.print("Content-Length: ");
-    	totalSentence = totalSentence  + "Content-Length: " + inFromUser.readLine()+"\r\n";
+    	totalSentence = totalSentence+"\r\n"  + "Content-Length: " + inFromUser.readLine()+"\r\n";
         while (!(sentence= inFromUser.readLine()).equals("exit")){
             totalSentence = totalSentence +"\r\n" + sentence ;
         }
@@ -248,13 +250,15 @@ public class HTTPClient {
     	File cacheFile = new File(getCacheFromFile(filename));
     	System.out.println(cacheFile.toString());
     	if ( cacheFile.exists()){
+    		System.out.println("yolo");
     		BufferedReader br = new BufferedReader(new FileReader(cacheFile));
     		String ifModifiedSince = br.readLine();
+    		System.out.println(ifModifiedSince);
     		br.close();
     		if (ifModifiedSince != null){
     			message = message.split("\r\n\r\n")[0];
+    			message = message + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
     			System.out.println(message);
-    			message = message + "\r\n" + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
     		}
     	}
     	return message;

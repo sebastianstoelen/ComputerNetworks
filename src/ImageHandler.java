@@ -48,11 +48,10 @@ public class ImageHandler {
 		DataInputStream s_in = clientS_in;
 		for (String img : images){
 			String fileName = URI + img;
-			File imgFile = new File(fileName);
+			File imgFile = new File(fileName.substring(1));
 			String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n" +"Host: "+ host
 								 + "\r\n" ;
 			message= HTTPClient.addIfModifiedSince(message, imgFile);
-			System.out.println("yolo");
 			System.out.println(message);
 			s_out.println(message);
 			BufferedImage image;
@@ -101,8 +100,8 @@ public class ImageHandler {
             System.err.println("Don't know about host: " + host);
             System.exit(1);
         }
-		String fileName = URI.substring(1) + img;
-		File imgFile = new File(fileName);
+		String fileName = URI + img;
+		File imgFile = new File(fileName.substring(1));
 		String message = "GET" + " " + URI +img+ " HTTP/" + httpVersion + "\r\n\r\n" ;
 		message= HTTPClient.addIfModifiedSince(message, imgFile);
 		System.out.println(message);
@@ -154,7 +153,7 @@ public class ImageHandler {
 	    		fileURI = "/index.html";
 	    	}
 	    	// Create (or overwrite) a cache file, containing the last-modified of the file.
-	    	File cacheFile = new File(fileURI.substring(1,fileURI.lastIndexOf('.'))+"cache"+".txt");
+	    	File cacheFile = HTTPClient.createFile(fileURI.substring(0,fileURI.lastIndexOf('.'))+"cache"+".txt");
 	    	FileWriter cacheWriter = new FileWriter(cacheFile);
 	    	cacheWriter.write(lastModified);
 	    	cacheWriter.close();

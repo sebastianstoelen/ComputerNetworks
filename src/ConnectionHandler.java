@@ -36,7 +36,7 @@ public class ConnectionHandler implements Runnable {
 	String version;
 	String code;
 	String modified;
-	String connection;
+	String connection = "keep-alive";
 	String host = null;
 	int size;
 	/* Constuctor for connectionHandler.
@@ -64,7 +64,6 @@ public class ConnectionHandler implements Runnable {
 					if ((tijd2-tijd1)>60000){
 						outToClient.close();
 						client.close();
-						System.out.println("Tis gedaan");
 						return;
 					}
 				}
@@ -86,13 +85,14 @@ public class ConnectionHandler implements Runnable {
 					
 					totalMessage = totalMessage  + clientSentence + "\r\n";
 				} 
-				if ( (version.contains("1.1")) & (host==null||host!="localhost") ){
-					outToClient.writeBytes(version + "400 BAD REQUEST");
+				getArguments(totalMessage);
+				System.out.println("hosit"+ host);
+				if ( (version.contains("1.1")) & (host==null||!host.equals("localhost")) ){
+					outToClient.writeBytes(version + " 400 BAD REQUEST" + "\r\n" + extraMessage(null));
 					client.close();
 					return;
 				}
 				// Method to set the different connection variables.
-				getArguments(totalMessage);
 				System.out.println("Received: " + totalMessage);
 				// Checks which command was received and calls the corresponding method.
 				File f = new File("Server/"+URI);
@@ -101,7 +101,6 @@ public class ConnectionHandler implements Runnable {
 						outToClient.writeBytes(getCommand(f));
 					}
 					else if (command.equals("HEAD")){
-						System.out.println(headCommand(f));
 						outToClient.writeBytes(headCommand(f));
 					}
 					else if (command.equals("PUT")){
@@ -112,18 +111,22 @@ public class ConnectionHandler implements Runnable {
 						outToClient.writeBytes(postCommand(f,inFromClient,size));
 					}
 					
+					else {
+						code = "400 BAD REQUEST";
+						outToClient.writeBytes(version + " " + code + extraMessage(null));
+					}
+					
 					// Closes the outputstream.
 					// If the HTTP version is 1.0 closes the socket of the client and ends the run method thus closing the thread.
 					if (version.contains("1.0") || connection.equals("close")){
 						outToClient.close();
 						client.close();
-						System.out.println("Tis gedaan");
 						return;
 					}
 				}
 				else {
 					String returnMessage = version + " " + "304 NOT MODIFIED";
-					outToClient.writeBytes(returnMessage);
+					outToClient.writeBytes(returnMessage + extraMessage(null));
 				}
             }
             catch (IOException e) {
@@ -139,7 +142,7 @@ public class ConnectionHandler implements Runnable {
 		boolean modifiedSince = false;
 		String returnMessage;
 		if (f.isDirectory()){
-			code = "404 BAD REQUEST";
+			code = "400 BAD REQUEST";
 		}
 		else {
 			code = "200 OK";
@@ -194,7 +197,7 @@ public class ConnectionHandler implements Runnable {
 		boolean modifiedSince = false;
 		String returnMessage;
 		if (f.isDirectory()){
-			code = "404 BAD REQUEST";
+			code = "400 BAD REQUEST";
 		}
 		else {
 			code = "200 OK";
@@ -221,7 +224,7 @@ public class ConnectionHandler implements Runnable {
 	private String headCommand(File f) {
 		String returnMessage;
 		if (!f.exists()){
-			code = "404 BAD REQUEST";
+			code = "404 NOT FOUND";
 		}
 		else {
 			code = "200 OK";
@@ -235,21 +238,25 @@ public class ConnectionHandler implements Runnable {
 	}
 	
 	private String extraMessage(File file) {
+		String returnMessage;
 		Date date = new Date();
 		SimpleDateFormat ft = 
 			      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
 		ft.setTimeZone(TimeZone.getTimeZone("GMT"));
-		Path path = FileSystems.getDefault().getPath("Server",URI);
-		String type = "";
-		try {
-			
-			type = Files.probeContentType(path);
-		} catch (IOException e) {
-			e.printStackTrace();
+		returnMessage = "Date: " + ft.format(date) + "\r\n";
+		if (file != null){
+			Path path = file.toPath();
+			String type = "";
+			try {
+				
+				type = Files.probeContentType(path);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			returnMessage = returnMessage + "Content-Type: " + type + "\r\n" + "Content-Length: " + file.length() + "\r\n"+ "Last-Modified: " + ft.format(file.lastModified());
 		}
-		return "Date: " + ft.format(date) + "\r\n" + "Content-Type: " + type + "\r\n" + "Content-Length: " + file.length() + "\r\n"+ "Last-Modified: " + ft.format(file.lastModified());
+		return returnMessage;
 	}
-
 	private void getArguments(String totalMessage) {
 		String[] arguments = totalMessage.split("\r\n")[0].split(" ");
 		command = arguments[0];
@@ -278,16 +285,18 @@ public class ConnectionHandler implements Runnable {
 	
 	private boolean isModifiedSince(File f){
 		boolean isModified = true;
-		Date oldDate = new Date(f.lastModified());
-		SimpleDateFormat ft = 
-			      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
-		try {
-			Date check = ft.parse(modified);
-			if (!(oldDate.compareTo(check) > 0)){
-				isModified = false;
+		if (modified != null){
+			Date oldDate = new Date(f.lastModified());
+			SimpleDateFormat ft = 
+				      new SimpleDateFormat ("E',' dd MMM yyyy HH:mm:ss zzz",locale);
+			try {
+				Date check = ft.parse(modified);
+				if (!(oldDate.compareTo(check) > 0)){
+					isModified = false;
+				}
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
-		} catch (ParseException e) {
-			e.printStackTrace();
 		}
 		return isModified;
 	}
