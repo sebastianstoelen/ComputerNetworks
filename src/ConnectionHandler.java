@@ -45,7 +45,12 @@ public class ConnectionHandler implements Runnable {
 	public ConnectionHandler(Socket socket){
 		client = socket;
 	}
-
+	/*
+	 * Main method to handle the connection between a client and the server. Executes getCommand(), headCommand(),
+	 * putCommand(), postCommand() or returns a status code 304 NOT MODIFIED if the client added a if-modified-since
+	 * header and the file has not changed. The connection will be closed if the version of HTTP is 1.0, or the client
+	 * added a connection: close header.
+	 */
 	@Override
 	public void run(){
 		while(true) {
@@ -87,7 +92,7 @@ public class ConnectionHandler implements Runnable {
 				} 
 				getArguments(totalMessage);
 				System.out.println("hosit"+ host);
-				if ( (version.contains("1.1")) & (host==null||!host.equals("localhost")) ){
+				if ( (version.contains("1.1")) && (host==null||!host.equals("localhost")) ){
 					outToClient.writeBytes(version + " 400 BAD REQUEST" + "\r\n" + extraMessage(null));
 					client.close();
 					return;
@@ -137,7 +142,14 @@ public class ConnectionHandler implements Runnable {
 		}
 		
 	}
-
+	
+	/*
+	 * Method to execute the HTTP POST command. The method will append the client input to the file specified 
+	 * by the client. If no such file exists, the method will create a new file.
+	 * @param File f | The file to which the content should be appended, or created.
+	 * @param DataInputStream inFromClient | input stream to read the data from the client.
+	 * @param int size | The size of the data that t should be appended or created.
+	 */
 	private String postCommand(File f,DataInputStream inFromClient,int size) {
 		boolean modifiedSince = false;
 		String returnMessage;
@@ -166,7 +178,12 @@ public class ConnectionHandler implements Runnable {
 		return returnMessage;
 		}
 	}
-
+	
+	/*
+	 * Method to execute the HTTP GET command. The requested file will be read and its content returned to the client.
+	 * If the file does not exist, the serve will respond with "404 NOT FOUND"
+	 * @param File f | The file that should be read.
+	 */
 	private String getCommand(File f) {
 		boolean modifiedSince = true;
 		String returnMessage;
@@ -193,6 +210,13 @@ public class ConnectionHandler implements Runnable {
 		return returnMessage;}
 	}
 	
+	/*
+	 * Method to execute the HTTP PUT command. This method will create a new file and add the data, specified by the client,
+	 * to this new file. If the file already exists, its content will be overwritten.
+	 * @param File f | the file to be created or overwritten.
+	 * @param DataInputStream inFromClient | input stream to read the data from the client.
+	 * @param int size | The size of the data that should be appended or created.
+	 */
 	private String putCommand(File f,DataInputStream inFromClient,int size) {
 		boolean modifiedSince = false;
 		String returnMessage;
@@ -221,6 +245,11 @@ public class ConnectionHandler implements Runnable {
 		return returnMessage;}
 	}
 	
+	/*
+	 * Method to execute the HTTP HEAD command. This method will return information about the file to the client, 
+	 * as fetched by the method extraMessage(f).
+	 * @param File f | the file of which the information should be returned.
+	 */
 	private String headCommand(File f) {
 		String returnMessage;
 		if (!f.exists()){
@@ -237,6 +266,11 @@ public class ConnectionHandler implements Runnable {
 			
 	}
 	
+	/*
+	 * Method to return extra information about the file requested. The method will return the date, content type 
+	 * and content length of the file.
+	 * @param File f | the file of which extra information is needed.
+	 */
 	private String extraMessage(File file) {
 		String returnMessage;
 		Date date = new Date();
@@ -257,6 +291,11 @@ public class ConnectionHandler implements Runnable {
 		}
 		return returnMessage;
 	}
+	
+	/*
+	 * Method to split a message and extract the command, URI and version.
+	 * @effect command, URI and version will be set to the right values.
+	 */
 	private void getArguments(String totalMessage) {
 		String[] arguments = totalMessage.split("\r\n")[0].split(" ");
 		command = arguments[0];
@@ -267,6 +306,13 @@ public class ConnectionHandler implements Runnable {
 		version = arguments[2];
 	}
 	
+	/*
+	 * Method to write content from the client in the specified file.
+	 * @effect The input from the client will be written to the file.
+	 * @param DataInputStream inFromClient | input stream to read the data from the client.
+	 * @param int size | The size of the content 
+	 * @param FileWriter writer | The file writer to write content to the file.
+	 */
 	private void writeMessage(DataInputStream inFromClient, int size,FileWriter writer) throws IOException{
 		byte[] buffer = new byte[1000];
         int sum = 0;
@@ -283,6 +329,10 @@ public class ConnectionHandler implements Runnable {
         writer.close();
 	}
 	
+	/*
+	 * Method to check whether the file is modified since a specified date.
+	 * @param File f | The file to be checked.
+	 */
 	private boolean isModifiedSince(File f){
 		boolean isModified = true;
 		if (modified != null){
@@ -301,7 +351,11 @@ public class ConnectionHandler implements Runnable {
 		return isModified;
 	}
 	
-
+	/*
+	 * Method to read a specified file.
+	 * @param Path path | The path to the file
+	 * @param Charset encoding | The encoding of the file
+	 */
 	static String readFile(Path path, Charset encoding) 
 			  throws IOException 
 			{
