@@ -250,14 +250,13 @@ public class HTTPClient {
     	File cacheFile = new File(getCacheFromFile(filename));
     	System.out.println(cacheFile.toString());
     	if ( cacheFile.exists()){
-    		System.out.println("yolo");
     		BufferedReader br = new BufferedReader(new FileReader(cacheFile));
     		String ifModifiedSince = br.readLine();
     		System.out.println(ifModifiedSince);
     		br.close();
     		if (ifModifiedSince != null){
     			message = message.split("\r\n\r\n")[0];
-    			message = message + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
+    			message = message +"\r\n" + "If-Modified-Since: " + ifModifiedSince + "\r\n\r\n";
     			System.out.println(message);
     		}
     	}
