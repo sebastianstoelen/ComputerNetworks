@@ -38,6 +38,7 @@ public class ConnectionHandler implements Runnable {
 	String modified;
 	String connection = "keep-alive";
 	String host = null;
+	DataOutputStream outToClient;
 	int size;
 	/* Constuctor for connectionHandler.
 	 * @Param socket is the socket of the client connecting.
@@ -51,10 +52,11 @@ public class ConnectionHandler implements Runnable {
 		while(true) {
 			// Create inputstream (convenient data reader) to this host.
             DataInputStream inFromClient;
+            
 			try {
 				inFromClient = new DataInputStream(client.getInputStream());
 				// Create outputstream (convenient data writer) to this host.
-				DataOutputStream outToClient = new DataOutputStream(client.getOutputStream());
+				outToClient = new DataOutputStream(client.getOutputStream());
 				// Variable where every line read from the reader is appended to.
 				String totalMessage = "";
 				Date date = new Date();
@@ -161,7 +163,7 @@ public class ConnectionHandler implements Runnable {
 				extra = extraMessage(f);
 				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw500();
 			}
 		return returnMessage;
 		}
@@ -188,7 +190,7 @@ public class ConnectionHandler implements Runnable {
 			try {
 			returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n" + readFile(path,StandardCharsets.UTF_8);
 			} catch (IOException e) {
-			e.printStackTrace();
+			throw500();
 		}
 		return returnMessage;}
 	}
@@ -216,7 +218,7 @@ public class ConnectionHandler implements Runnable {
 				extra = extraMessage(f);
 				returnMessage = returnMessage + "\r\n" + extra + "\r\n\r\n";
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw500();
 			}
 		return returnMessage;}
 	}
@@ -251,7 +253,7 @@ public class ConnectionHandler implements Runnable {
 				
 				type = Files.probeContentType(path);
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw500();
 			}
 			returnMessage = returnMessage + "Content-Type: " + type + "\r\n" + "Content-Length: " + file.length() + "\r\n"+ "Last-Modified: " + ft.format(file.lastModified());
 		}
@@ -295,12 +297,21 @@ public class ConnectionHandler implements Runnable {
 					isModified = false;
 				}
 			} catch (ParseException e) {
-				e.printStackTrace();
+				throw500();
 			}
 		}
 		return isModified;
 	}
 	
+
+	private void throw500() {
+		try {
+			outToClient.writeBytes(version + "500 SERVER ERROR" + extraMessage(null));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 
 	static String readFile(Path path, Charset encoding) 
 			  throws IOException 
